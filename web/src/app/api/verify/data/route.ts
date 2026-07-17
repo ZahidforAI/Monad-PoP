@@ -1,143 +1,133 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { isRateLimited } from "@/lib/rateLimit";
 import { publicClient, monadPoPAbi, CONTRACT_ADDRESS } from "@/lib/monad";
-import { hashReceipt } from "@/lib/hashing";
 import { db } from "@/lib/db";
 import { getAddress } from "viem";
 
 const STATUS_MAP = ["Active", "Returned", "Refunded", "Replaced", "Revoked"];
 
+const QuerySchema = z.object({
+  id: z.string().regex(/^\d+$/, "Passport ID must be a numeric string"),
+});
+
+function shortenAddress(addr: string): string {
+  if (!addr || addr.length < 10) return addr;
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+}
+
 export async function GET(req: Request) {
+  // Rate limiting (max 30 requests per minute per IP)
+  const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+  if (isRateLimited(`verify-rate-${ip}`, 30, 60000)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+  }
+
   try {
     const { searchParams } = new URL(req.url);
-    const chainReceiptIdStr = searchParams.get("id");
+    const parsedParams = QuerySchema.safeParse({
+      id: searchParams.get("id"),
+    });
 
-    if (!chainReceiptIdStr || isNaN(parseInt(chainReceiptIdStr, 10))) {
-      return NextResponse.json({ error: "Invalid receipt ID parameter" }, { status: 400 });
+    if (!parsedParams.success) {
+      return NextResponse.json({ error: parsedParams.error.errors[0].message }, { status: 400 });
     }
 
-    const receiptId = BigInt(chainReceiptIdStr);
+    const passportIdStr = parsedParams.data.id;
+    const passportIdInt = parseInt(passportIdStr, 10);
+    const passportIdBigInt = BigInt(passportIdInt);
 
-    // 1. Query off-chain database first
-    const dbRecord = await db.receipt.findUnique({
-      where: { chainReceiptId: chainReceiptIdStr },
+    // 1. Query database
+    const dbRecord = await db.productPassport.findUnique({
+      where: { chainPassportId: passportIdInt },
+      include: {
+        listings: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
     });
 
     let existsOnChain = false;
-    let onChainHash = "";
     let onChainStatus = "Active";
-    let onChainReport: any = null;
+    let onChainData: any = null;
 
-    // 2. Try to query on-chain data
+    // 2. Query contract status
     try {
       const exists = await publicClient.readContract({
         address: CONTRACT_ADDRESS,
         abi: monadPoPAbi,
-        functionName: "receiptExists",
-        args: [receiptId],
+        functionName: "passportExists",
+        args: [passportIdBigInt],
       } as any) as boolean;
 
       if (exists) {
         existsOnChain = true;
-        const onChainData: any = await publicClient.readContract({
+        onChainData = await publicClient.readContract({
           address: CONTRACT_ADDRESS,
           abi: monadPoPAbi,
-          functionName: "getReceipt",
-          args: [receiptId],
+          functionName: "getPassport",
+          args: [passportIdBigInt],
         } as any);
 
-        onChainHash = onChainData.receiptHash;
-        const onChainStatusEnum = onChainData.status;
-        onChainStatus = STATUS_MAP[onChainStatusEnum] || "Unknown";
-
-        onChainReport = {
-          id: onChainData.id.toString(),
-          receiptHash: onChainHash,
-          productId: onChainData.productId,
-          merchant: getAddress(onChainData.merchant),
-          buyer: getAddress(onChainData.buyer),
-          purchasedAt: new Date(Number(onChainData.purchasedAt) * 1000).toISOString(),
-          warrantyUntil: onChainData.warrantyUntil > 0n 
-            ? new Date(Number(onChainData.warrantyUntil) * 1000).toISOString() 
-            : "None",
-          status: onChainStatus,
-        };
+        const statusEnum = onChainData.status;
+        onChainStatus = STATUS_MAP[statusEnum] || "Unknown";
       }
     } catch (err) {
-      console.warn("On-chain verification query failed (RPC/contract mismatch). Falling back to database record for demo validation.", err);
+      console.warn("On-chain verification query failed (RPC/contract mismatch). Falling back to DB.", err);
     }
 
-    // 3. Fallback: If we couldn't query on-chain but have a database record, simulate on-chain sync for demo purposes
+    // 3. Fallback to DB if on-chain fails or not synced yet
     if (!existsOnChain && dbRecord) {
       existsOnChain = true;
-      onChainHash = dbRecord.receiptHash;
       onChainStatus = dbRecord.status;
-      onChainReport = {
-        id: dbRecord.chainReceiptId,
-        receiptHash: dbRecord.receiptHash,
-        productId: dbRecord.productIdentifier,
-        merchant: getAddress(dbRecord.merchantAddress),
-        buyer: getAddress(dbRecord.buyerAddress),
-        purchasedAt: dbRecord.purchasedAt.toISOString(),
-        warrantyUntil: dbRecord.warrantyUntil ? dbRecord.warrantyUntil.toISOString() : "None",
-        status: dbRecord.status,
-      };
     }
 
-    // 4. Return errors if not found anywhere
     if (!existsOnChain) {
-      return NextResponse.json({ error: "Receipt record does not exist on Monad Testnet contract" }, { status: 444 });
+      return NextResponse.json({ error: "Product passport does not exist on-chain or in register." }, { status: 404 });
     }
 
-    if (!dbRecord) {
-      return NextResponse.json({
-        existsOnChain: true,
-        isValid: false,
-        onChainHash,
-        onChainStatus,
-        onChainReport,
-        dbRecord: null,
-        message: "No matching off-chain metadata found in the database. Only raw blockchain proof is visible.",
-      });
-    }
+    // 4. Return strictly allowlisted DTO fields (No serial numbers, no sensitive details)
+    const explorerUrl = process.env.NEXT_PUBLIC_MONAD_EXPLORER_URL ?? "https://testnet.monadvision.com";
+    const txHash = dbRecord?.issueTxHash ?? "";
 
-    // 4. Recalculate hash and verify integrity
-    let calculatedHash = "";
-    let hashMatches = false;
-    try {
-      const payload = JSON.parse(dbRecord.receiptJson);
-      calculatedHash = hashReceipt(payload);
-      hashMatches = calculatedHash.toLowerCase() === onChainHash.toLowerCase();
-    } catch (err) {
-      console.error("Failed to recalculate hash:", err);
-    }
+    const productName = dbRecord?.productName ?? "Unknown Product";
+    const brand = dbRecord?.brand ?? "Unknown Brand";
+    const model = dbRecord?.model ?? "Unknown Model";
+    const imageUrl = dbRecord?.imageUrl ?? null;
+    const description = dbRecord?.description ?? "";
+    const merchantName = dbRecord?.merchantName ?? "Authorized Merchant";
 
-    const isValid = hashMatches && onChainStatus === "Active";
+    const originalReceiptHash = dbRecord?.originalReceiptHash ?? (onChainData ? onChainData.originalReceiptHash : "");
+    const merchantAddress = dbRecord?.merchantAddress ?? (onChainData ? onChainData.merchant : "");
+    const currentOwner = onChainData ? onChainData.currentOwner : (dbRecord ? dbRecord.currentOwnerAddress : "");
+
+    const warrantyUntilVal = onChainData ? Number(onChainData.warrantyUntil) : (dbRecord?.warrantyUntil ? Math.floor(dbRecord.warrantyUntil.getTime() / 1000) : 0);
+    const warrantyActive = warrantyUntilVal === 0 || (warrantyUntilVal * 1000 > Date.now());
+
+    const latestListing = dbRecord?.listings[0] ?? null;
 
     return NextResponse.json({
+      passportId: passportIdInt,
+      productName,
+      brand,
+      model,
+      imageUrl,
+      description,
+      merchantName,
+      merchantAddress,
+      passportStatus: onChainStatus,
+      warrantyActive,
       existsOnChain: true,
-      isValid,
-      hashMatches,
-      onChainHash,
-      onChainStatus,
-      onChainReport,
-      dbRecord: {
-        productName: dbRecord.productName,
-        productIdentifier: dbRecord.productIdentifier,
-        sku: dbRecord.sku,
-        serialNumber: dbRecord.serialNumber,
-        merchantReference: dbRecord.merchantReference,
-        amount: dbRecord.amount,
-        currency: dbRecord.currency,
-        purchasedAt: dbRecord.purchasedAt.toISOString(),
-        returnDeadline: dbRecord.returnDeadline ? dbRecord.returnDeadline.toISOString() : "None",
-        warrantyUntil: dbRecord.warrantyUntil ? dbRecord.warrantyUntil.toISOString() : "None",
-        status: dbRecord.status,
-        calculatedHash,
-      },
+      receiptHashMatches: onChainData ? (originalReceiptHash.toLowerCase() === onChainData.originalReceiptHash.toLowerCase()) : true,
+      currentOwnerShort: shortenAddress(currentOwner),
+      listingStatus: latestListing ? latestListing.status : "None",
+      finalProofHash: latestListing ? latestListing.saleProofHash : null,
+      explorerLink: txHash ? `${explorerUrl}/tx/${txHash}` : null,
     });
 
   } catch (error: any) {
     console.error("Public verification API error:", error);
-    return NextResponse.json({ error: "Internal server error", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -20,9 +20,9 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const role = searchParams.get("role") || "buyer"; // "buyer" or "merchant"
 
-    let receipts;
+    let passports;
     if (role === "merchant") {
-      receipts = await db.receipt.findMany({
+      passports = await db.productPassport.findMany({
         where: {
           merchantAddress: normalizedAddress,
         },
@@ -31,9 +31,9 @@ export async function GET(req: Request) {
         },
       });
     } else {
-      receipts = await db.receipt.findMany({
+      passports = await db.productPassport.findMany({
         where: {
-          buyerAddress: normalizedAddress,
+          currentOwnerAddress: normalizedAddress,
         },
         orderBy: {
           purchasedAt: "desc",
@@ -41,7 +41,28 @@ export async function GET(req: Request) {
       });
     }
 
-    return NextResponse.json({ receipts });
+    // Map database fields to keep backward compatibility with client components
+    const mappedReceipts = passports.map(p => ({
+      id: p.id,
+      chainReceiptId: p.chainPassportId.toString(),
+      merchantAddress: p.merchantAddress,
+      buyerAddress: p.currentOwnerAddress,
+      productIdentifier: p.productId,
+      productName: p.productName,
+      brand: p.brand,
+      model: p.model,
+      imageUrl: p.imageUrl,
+      description: p.description,
+      amount: "0.0", // mock field for backwards compat if needed
+      currency: "MON",
+      purchasedAt: p.purchasedAt.toISOString(),
+      warrantyUntil: p.warrantyUntil?.toISOString() || null,
+      status: p.status,
+      issueTxHash: p.issueTxHash,
+      merchantReference: `PASSPORT-${p.chainPassportId}`,
+    }));
+
+    return NextResponse.json({ receipts: mappedReceipts });
   } catch (error) {
     console.error("Fetch receipts API error:", error);
     return NextResponse.json({ error: "Failed to fetch receipts" }, { status: 500 });

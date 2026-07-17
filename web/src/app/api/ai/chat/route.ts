@@ -4,8 +4,8 @@ import { verifyToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { isRateLimited } from "@/lib/rateLimit";
 import { getAddress } from "viem";
-import { hashReceipt } from "@/lib/hashing";
 import { publicClient, monadPoPAbi, CONTRACT_ADDRESS } from "@/lib/monad";
+import { decryptData } from "@/lib/crypto";
 import { ChatGroq } from "@langchain/groq";
 import { z } from "zod";
 
@@ -26,7 +26,7 @@ const IntentSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    // 1. Authenticate user session
+    // 1. Authenticate user session (SIWE verification)
     const sessionCookie = cookies().get("monad-pop-session");
     if (!sessionCookie) {
       return NextResponse.json({ error: "Unauthorized: Wallet not connected or authenticated" }, { status: 401 });
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const normalizedAddress = getAddress(address);
 
     // 2. Rate limiting
-    if (isRateLimited(normalizedAddress, 10, 60000)) {
+    if (isRateLimited(normalizedAddress, 15, 60000)) {
       return NextResponse.json({ error: "Too many requests. Please wait a moment." }, { status: 429 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { messages } = body; // Array of { role: 'user' | 'assistant', content: string }
+    const { messages } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: "Missing chat history or message" }, { status: 400 });
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       classification = await structuredModel.invoke([
         {
           role: "system",
-          content: "Classify the user request and extract key search parameters regarding their purchase receipts.",
+          content: "Classify the user request and extract key search parameters regarding their product passports.",
         },
         { role: "user", content: userMessage },
       ]);
@@ -91,142 +91,139 @@ export async function POST(req: Request) {
     const { intent, searchTerm, daysLimit, chainReceiptId } = classification;
     console.log("AI Intent Classified:", { intent, searchTerm, daysLimit, chainReceiptId });
 
-    // 6. Context Retrieval: Fetch authenticated user's receipts from DB
-    let dbReceipts = [];
+    // 6. Context Retrieval: Fetch authenticated user's owned product passports including private data
+    const whereClause: any = {
+      currentOwnerAddress: normalizedAddress,
+    };
+
     if (chainReceiptId) {
-      // Find specific receipt
-      const rec = await db.receipt.findFirst({
-        where: {
-          buyerAddress: normalizedAddress,
-          chainReceiptId: chainReceiptId,
-        },
-      });
-      if (rec) dbReceipts.push(rec);
+      const parsedId = parseInt(chainReceiptId, 10);
+      if (!isNaN(parsedId)) {
+        whereClause.chainPassportId = parsedId;
+      }
     } else if (searchTerm) {
-      // Search receipts matching criteria
-      dbReceipts = await db.receipt.findMany({
-        where: {
-          buyerAddress: normalizedAddress,
-          OR: [
-            { productName: { contains: searchTerm } },
-            { productIdentifier: { contains: searchTerm } },
-            { merchantReference: { contains: searchTerm } },
-            { sku: { contains: searchTerm } },
-          ],
-        },
-        orderBy: { purchasedAt: "desc" },
-      });
-    } else {
-      // Fetch all receipts to filter in memory/logic
-      dbReceipts = await db.receipt.findMany({
-        where: { buyerAddress: normalizedAddress },
-        orderBy: { purchasedAt: "desc" },
-      });
+      whereClause.OR = [
+        { productName: { contains: searchTerm } },
+        { brand: { contains: searchTerm } },
+        { model: { contains: searchTerm } },
+      ];
     }
 
-    // 7. Verify receipts against Monad Testnet and build rich context
-    const contextReceipts = [];
-    for (const r of dbReceipts) {
+    const dbPassports = await db.productPassport.findMany({
+      where: whereClause,
+      include: {
+        privateData: true,
+      },
+      orderBy: { purchasedAt: "desc" },
+    });
+
+    // 7. Verify passport state and decrypt private details
+    const contextPassports = [];
+    for (const p of dbPassports) {
       let isVerified = false;
-      let onChainStatus = "RPC unavailable";
+      let onChainStatus = "RPC offline";
       let details = "Not checked";
 
-      // Re-hash local metadata
-      let computedHash = "";
-      try {
-        computedHash = hashReceipt(JSON.parse(r.receiptJson));
-      } catch (err) {
-        console.error("Error hashing receipt payload:", err);
-      }
-
-      if (r.issueTxHash.startsWith("demo-tx-hash")) {
-        // Seeded demo receipts
-        isVerified = false;
-        onChainStatus = "Demo — not on-chain";
-        details = "Seeded demo data. No matching transaction exists on Monad Testnet.";
-      } else {
-        // Read on-chain status from contract
+      // Decrypt private details
+      let decryptedPayload: any = {};
+      if (p.privateData) {
         try {
-          const onChainProof: any = await publicClient.readContract({
-            address: CONTRACT_ADDRESS,
-            abi: monadPoPAbi,
-            functionName: "getReceipt",
-            args: [BigInt(r.chainReceiptId)],
-          } as any);
-
-          const hashMatches = onChainProof.receiptHash.toLowerCase() === computedHash.toLowerCase();
-          const STATUS_ENUMS = ["Active", "Returned", "Refunded", "Replaced", "Revoked"];
-          onChainStatus = STATUS_ENUMS[onChainProof.status] || "Unknown";
-
-          if (hashMatches && onChainProof.buyer.toLowerCase() === normalizedAddress.toLowerCase()) {
-            isVerified = true;
-            details = `Recalculated receipt metadata hash matches the on-chain receiptHash (${onChainProof.receiptHash}). Verified on Monad.`;
-          } else {
-            isVerified = false;
-            details = `Hash mismatch! Calculated: ${computedHash}, On-chain: ${onChainProof.receiptHash}`;
-          }
+          const decryptedStr = decryptData(
+            p.privateData.encryptedPayload,
+            p.privateData.iv,
+            p.privateData.tag
+          );
+          decryptedPayload = JSON.parse(decryptedStr);
         } catch (err) {
-          console.error("Error reading contract status for receipt id:", r.chainReceiptId, err);
-          onChainStatus = "RPC unavailable";
-          details = "Failed to query the Monad PoP contract on Monad Testnet.";
+          console.error(`Failed to decrypt private data for passport id: ${p.chainPassportId}`, err);
         }
       }
 
-      contextReceipts.push({
-        id: r.id,
-        chainReceiptId: r.chainReceiptId,
-        productName: r.productName,
-        productIdentifier: r.productIdentifier,
-        merchantReference: r.merchantReference,
-        amount: r.amount,
-        currency: r.currency,
-        status: r.status,
-        purchasedAt: r.purchasedAt.toISOString(),
-        returnDeadline: r.returnDeadline ? r.returnDeadline.toISOString() : "None",
-        warrantyUntil: r.warrantyUntil ? r.warrantyUntil.toISOString() : "None",
+      if (p.issueTxHash.startsWith("demo-tx-hash")) {
+        isVerified = false;
+        onChainStatus = "Demo — Not On-chain";
+        details = "Local demo seeded passport. No on-chain contract record exists.";
+      } else {
+        // Read on-chain proof from Monad contract
+        try {
+          const onChainPassport: any = await publicClient.readContract({
+            address: CONTRACT_ADDRESS,
+            abi: monadPoPAbi,
+            functionName: "getPassport",
+            args: [BigInt(p.chainPassportId)],
+          } as any);
+
+          const hashMatches = onChainPassport.originalReceiptHash.toLowerCase() === p.originalReceiptHash.toLowerCase();
+          const STATUS_ENUMS = ["Active", "Returned", "Refunded", "Replaced", "Revoked"];
+          onChainStatus = STATUS_ENUMS[onChainPassport.status] || "Unknown";
+
+          if (hashMatches && onChainPassport.currentOwner.toLowerCase() === normalizedAddress.toLowerCase()) {
+            isVerified = true;
+            details = `Decoded receipt hash matches on-chain record (${onChainPassport.originalReceiptHash}). Verified on Monad.`;
+          } else {
+            isVerified = false;
+            details = `Verification failed. Hash match: ${hashMatches}. Owner match: ${onChainPassport.currentOwner.toLowerCase() === normalizedAddress.toLowerCase()}`;
+          }
+        } catch (err) {
+          console.error("Error reading contract status for passport:", p.chainPassportId, err);
+          onChainStatus = "RPC offline";
+          details = "Failed to query the Monad PoP contract on-chain.";
+        }
+      }
+
+      contextPassports.push({
+        passportId: p.chainPassportId,
+        productName: p.productName,
+        brand: p.brand,
+        model: p.model,
+        status: p.status,
+        purchasedAt: p.purchasedAt.toISOString(),
+        warrantyUntil: p.warrantyUntil ? p.warrantyUntil.toISOString() : "None",
         isVerified,
         onChainStatus,
         verificationDetails: details,
+        
+        // Securely decrypted fields made available to LLM context
+        serialNumber: decryptedPayload.serialNumber || "None",
+        sku: decryptedPayload.sku || "None",
+        merchantReference: decryptedPayload.merchantReference || "None",
+        privateNotes: decryptedPayload.privateNotes || "None",
+        warrantyDocs: decryptedPayload.warrantyDocs || "None",
       });
     }
 
-    // 8. Filter based on classification intents
-    let filteredContext = contextReceipts;
+    // 8. Filter context based on classification intent
+    let filteredContext = contextPassports;
     if (intent === "RETURN_ELIGIBILITY") {
-      // Focus on active/eligible return window
-      filteredContext = contextReceipts.filter(
-        (r) => r.status === "Active" && r.returnDeadline !== "None" && new Date(r.returnDeadline) > new Date()
-      );
+      filteredContext = contextPassports.filter((p) => p.status === "Active");
     } else if (intent === "WARRANTY_STATUS" || intent === "EXPIRING_WARRANTIES") {
       const limitDays = daysLimit ?? 30;
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + limitDays);
 
-      filteredContext = contextReceipts.filter((r) => {
-        if (r.warrantyUntil === "None") return false;
-        const wDate = new Date(r.warrantyUntil);
+      filteredContext = contextPassports.filter((p) => {
+        if (p.warrantyUntil === "None") return false;
+        const wDate = new Date(p.warrantyUntil);
         return wDate > new Date() && wDate <= targetDate;
       });
     }
 
-    // 9. Call Groq model with system prompt and context
-    const systemPrompt = `You are the Monad PoP receipt assistant.
+    // 9. Call Groq LLM with system prompt containing decrypted context
+    const systemPrompt = `You are the Monad PoP AI Assistant.
 
-You help an authenticated user understand their own purchase credentials, return windows, warranty deadlines, and Monad verification results.
+You help an authenticated user understand their owned Product Passports, return options, warranty terms, and secure details like product serial numbers or SKUs.
 
-Context of user receipts retrieved from secure server and blockchain:
+Context of user's owned product passports (decrypting private details):
 ${JSON.stringify(filteredContext, null, 2)}
 
 Rules:
-1. Use only the receipt and blockchain context supplied by the server.
-2. Never invent a receipt, merchant, purchase date, warranty term, transaction, or on-chain status.
-3. Clearly distinguish database metadata from blockchain-verified state.
-4. A receipt is verified only when its recalculated metadata hash matches the on-chain receiptHash and the expected contract record exists.
-5. Do not claim that a blockchain credential proves current physical possession or absolute legal title.
-6. Return and warranty eligibility may depend on merchant policy and applicable law. Describe dates and recorded terms, but do not provide a legal guarantee.
-7. Do not reveal another wallet's private receipt data.
-8. When information is missing, state exactly what is unavailable.
-9. Keep answers direct and cite the relevant receipt ID or product display name inside the response.
+1. Use only the product passport and decrypted blockchain context supplied by the server.
+2. Never invent or assume a serial number, SKU, warranty date, or merchant name.
+3. Clearly distinguish between database public metadata and on-chain verified status.
+4. Only describe details that are present in the context.
+5. If the user asks for a serial number, SKU, or warranty document URL, lookup the decrypted 'serialNumber', 'sku', or 'warrantyDocs' fields in the context and provide it directly.
+6. A passport is verified only if 'isVerified' is true.
+7. Keep answers professional, direct, and refer to the specific Passport ID or product brand/model.
 `;
 
     const chatMessages = [
@@ -239,7 +236,7 @@ Rules:
     return NextResponse.json({
       response: response.content,
       classifiedIntent: intent,
-      retrievedCount: contextReceipts.length,
+      retrievedCount: contextPassports.length,
     });
   } catch (error: any) {
     console.error("AI Chat API Error:", error);

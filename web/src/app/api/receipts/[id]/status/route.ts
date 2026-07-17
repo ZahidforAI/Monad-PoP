@@ -25,7 +25,7 @@ export async function PATCH(
     const normalizedAddress = getAddress(address);
 
     // 1. Fetch current database record
-    const receipt = await db.receipt.findUnique({
+    const receipt = await db.productPassport.findUnique({
       where: { id: params.id },
     });
 
@@ -45,7 +45,7 @@ export async function PATCH(
         address: CONTRACT_ADDRESS,
         abi: monadPoPAbi,
         functionName: "getReceipt",
-        args: [BigInt(receipt.chainReceiptId)],
+        args: [BigInt(receipt.chainPassportId)],
       } as any);
 
       const onChainStatusEnum = onChainData.status; // uint8
@@ -66,7 +66,7 @@ export async function PATCH(
     }
 
     // 4. Update off-chain database record
-    const updated = await db.receipt.update({
+    const updated = await db.productPassport.update({
       where: { id: params.id },
       data: { status: onChainStatusStr },
     });
