@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useAuth } from "@/hooks/useAuth";
-import { Wallet, LogOut, Shield, User, Store, MessageSquare, Menu, X, Sun, Moon, ShoppingBag, History } from "lucide-react";
+import { Wallet, LogOut, Menu, X, Sun, Moon, ShoppingBag, HelpCircle, FileText, PlusCircle, MessageSquare, Clipboard } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navigation() {
@@ -13,7 +13,8 @@ export default function Navigation() {
   const { isConnected } = useAccount();
   const { connect } = useConnect();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     // Sync theme on initial load
@@ -21,6 +22,17 @@ export default function Navigation() {
       const isDark = document.documentElement.classList.contains("dark");
       setTheme(isDark ? "dark" : "light");
     }
+
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleTheme = () => {
@@ -51,24 +63,28 @@ export default function Navigation() {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
 
-  const navLinks = [
-    { name: "Explore", href: "/explore", icon: ShoppingBag },
-    { name: "Sell", href: "/sell", icon: User },
-    { name: "Requests", href: "/requests", icon: History },
-    { name: "My Passports", href: "/passports", icon: Shield },
-    { name: "Merchant Portal", href: "/merchant", icon: Store },
-    { name: "AI Assistant", href: "/assistant", icon: MessageSquare },
+  // Nav links configured according to DESIGN.md
+  const mainLinks = [
+    { name: "Marketplace", href: "/explore", icon: ShoppingBag },
+    { name: "How It Works", href: "/#how-it-works", icon: HelpCircle },
+    { name: "Proofs", href: "/passports", icon: FileText },
   ];
 
-  if (isAdmin) {
-    navLinks.push({ name: "Admin Portal", href: "/admin", icon: Shield });
+  const appLinks = [
+    { name: "Sell", href: "/sell", icon: PlusCircle },
+    { name: "Requests", href: "/requests", icon: Clipboard },
+    { name: "Assistant", href: "/assistant", icon: MessageSquare },
+  ];
+
+  if (isMerchant) {
+    appLinks.push({ name: "Merchant Portal", href: "/merchant", icon: PlusCircle });
   }
 
-  const renderAuthButton = () => {
+  const renderAuthButton = (isMobileView = false) => {
     if (loading) {
       return (
-        <button className="px-4 py-2 bg-card-border/50 text-foreground/40 rounded-lg text-sm animate-pulse cursor-not-allowed border border-card-border">
-          Loading...
+        <button className="px-5 py-2.5 bg-card-border/50 text-foreground/40 rounded-full text-xs font-mono uppercase tracking-wider animate-pulse cursor-not-allowed border border-card-border">
+          loading...
         </button>
       );
     }
@@ -77,7 +93,7 @@ export default function Navigation() {
       return (
         <button
           onClick={() => connect({ connector: injected() })}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-medium rounded-lg text-sm transition-all duration-300 hover:opacity-90 hover:shadow-lg border border-primary/20"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-mono text-xs font-bold uppercase tracking-widest rounded-full hover:bg-monad-lightPurple hover:shadow-lg active:scale-95 transition-all duration-200 border border-primary/20"
         >
           <Wallet className="w-4 h-4" />
           Connect Wallet
@@ -89,7 +105,7 @@ export default function Navigation() {
       return (
         <button
           onClick={switchNetwork}
-          className="flex items-center gap-2 px-4 py-2 bg-accent-rose hover:bg-accent-rose/90 text-white font-medium rounded-lg text-sm transition-all duration-300 border border-accent-rose/30"
+          className="flex items-center gap-2 px-5 py-2.5 bg-accent-rose hover:opacity-90 text-white font-mono text-xs font-bold uppercase tracking-widest rounded-full active:scale-95 transition-all duration-200 border border-accent-rose/30"
         >
           Switch to Monad
         </button>
@@ -101,7 +117,7 @@ export default function Navigation() {
         <button
           onClick={login}
           disabled={authenticating}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-cyan to-monad-purple hover:opacity-95 text-white font-medium rounded-lg text-sm transition-all duration-300 border border-accent-cyan/30"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-accent-cyan to-primary hover:opacity-95 text-white font-mono text-xs font-bold tracking-widest uppercase rounded-full active:scale-95 transition-all duration-200 border border-accent-cyan/30"
         >
           {authenticating ? "Verifying..." : "Verify Session"}
         </button>
@@ -110,20 +126,20 @@ export default function Navigation() {
 
     return (
       <div className="flex items-center gap-3">
-        <div className="hidden lg:flex flex-col items-end text-xs">
-          <span className="font-semibold text-foreground">{shortAddress(sessionAddress)}</span>
-          <div className="flex items-center gap-1.5 mt-0.5">
+        <div className="flex flex-col items-end text-right">
+          <span className="font-mono text-xs font-semibold text-foreground">{shortAddress(sessionAddress)}</span>
+          <div className="flex items-center gap-1 mt-0.5">
             {isAdmin && (
-              <span className="px-1.5 py-0.5 bg-accent-cyan/15 text-accent-cyan border border-accent-cyan/30 rounded text-[9px] font-bold tracking-wider">
+              <span className="px-1.5 py-0.5 bg-accent-cyan/15 text-accent-cyan border border-accent-cyan/30 rounded text-[9px] font-mono font-bold tracking-wider uppercase">
                 ADMIN
               </span>
             )}
             {isMerchant && (
-              <span className="px-1.5 py-0.5 bg-monad-lightPurple/15 text-monad-lightPurple border border-monad-lightPurple/30 rounded text-[9px] font-bold tracking-wider">
+              <span className="px-1.5 py-0.5 bg-monad-lightPurple/15 text-monad-lightPurple border border-monad-lightPurple/30 rounded text-[9px] font-mono font-bold tracking-wider uppercase">
                 MERCHANT
               </span>
             )}
-            <span className="px-1.5 py-0.5 bg-accent-emerald/15 text-accent-emerald border border-accent-emerald/30 rounded text-[9px] font-bold tracking-wider">
+            <span className="px-1.5 py-0.5 bg-accent-emerald/15 text-accent-emerald border border-accent-emerald/30 rounded text-[9px] font-mono font-bold tracking-wider uppercase">
               SECURE
             </span>
           </div>
@@ -132,7 +148,7 @@ export default function Navigation() {
         <button
           onClick={logout}
           title="Sign out / Disconnect"
-          className="p-2 bg-card border border-card-border hover:bg-accent-rose/10 hover:text-accent-rose hover:border-accent-rose/25 rounded-lg transition-all duration-200"
+          className="p-2.5 bg-card border border-card-border hover:bg-accent-rose/10 hover:text-accent-rose hover:border-accent-rose/25 rounded-full transition-all duration-200"
         >
           <LogOut className="w-4 h-4" />
         </button>
@@ -141,94 +157,183 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="w-full bg-card/90 backdrop-blur-md border-b border-card-border sticky top-0 z-50 px-6 py-4 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-monad-purple to-accent-cyan flex items-center justify-center font-black text-white text-base shadow-lg group-hover:scale-105 transition-transform duration-300">
-            M
+    <>
+      <nav
+        className={`w-full fixed top-0 left-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? "py-3 px-6 md:px-12 bg-background/80 dark:bg-purple-950/80 backdrop-blur-md border-b border-card-border/60 shadow-sm"
+            : "py-6 px-6 md:px-12 bg-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-monad-lightPurple flex items-center justify-center font-black text-white text-lg shadow-lg group-hover:scale-105 transition-transform duration-300">
+              M
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold tracking-tight text-foreground leading-none group-hover:text-primary transition">
+                Monad <span className="text-primary font-normal">PoP</span>
+              </span>
+              <span className="text-[9px] font-mono text-foreground/45 tracking-widest uppercase mt-0.5">Testnet MVP</span>
+            </div>
+          </Link>
+
+          {/* Center Navigation Links (Marketplace, How It Works, Proofs) */}
+          <div className="hidden md:flex items-center gap-7">
+            {mainLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive ? "text-primary font-semibold" : "text-foreground/70 hover:text-foreground"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+            
+            {/* Divider */}
+            <span className="h-4 w-[1px] bg-card-border"></span>
+
+            {/* App Actions links (Sell, Requests, Assistant) */}
+            {appLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`text-xs font-mono uppercase tracking-wider transition-colors ${
+                    isActive ? "text-primary font-bold" : "text-foreground/50 hover:text-foreground"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground group-hover:text-monad-lightPurple transition">
-            Monad <span className="text-monad-lightPurple font-light">PoP</span>
-          </span>
-        </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`flex items-center gap-2 text-sm font-medium transition ${
-                  isActive ? "text-monad-lightPurple font-semibold" : "text-foreground/75 hover:text-foreground"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {link.name}
-              </Link>
-            );
-          })}
+          {/* Right Actions: Testnet Badge, Theme Toggle, Connect Button */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* Testnet Badge */}
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-mono font-bold tracking-widest text-primary uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-emerald animate-pulse"></span>
+              Monad Testnet
+            </div>
+
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 bg-card border border-card-border hover:bg-primary/5 hover:text-primary rounded-full transition-all"
+              title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            >
+              {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+            
+            {renderAuthButton()}
+          </div>
+
+          {/* Mobile Navigation Trigger */}
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 bg-card border border-card-border text-foreground/80 rounded-full"
+            >
+              {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+            
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2 text-foreground/80 rounded-full bg-card border border-card-border"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
+      </nav>
 
-        {/* Theme and Auth Actions */}
-        <div className="hidden md:flex items-center gap-4">
-          <button
-            onClick={toggleTheme}
-            className="p-2 bg-card border border-card-border hover:bg-card-border/50 text-foreground/80 hover:text-foreground rounded-lg transition-all"
-            title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
-          >
-            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
-          
-          {renderAuthButton()}
-        </div>
-
-        {/* Mobile menu trigger */}
-        <div className="md:hidden flex items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2 bg-card border border-card-border text-foreground/85 rounded-lg"
-          >
-            {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
-          
-          {renderAuthButton()}
-          
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-foreground/85 hover:text-foreground rounded-lg bg-card border border-card-border"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
+      {/* Accessible Full-screen Mobile Menu (DESIGN.md) */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-4 pt-4 border-t border-card-border flex flex-col gap-4 animate-fade-in">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-                  isActive ? "bg-monad-purple/10 text-monad-lightPurple border-l-2 border-monad-lightPurple" : "text-foreground/75 hover:text-foreground hover:bg-card-border"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {link.name}
-              </Link>
-            );
-          })}
+        <div className="fixed inset-0 z-[100] bg-purple-950 text-white flex flex-col justify-between p-8 animate-fade-in">
+          {/* Header inside mobile menu */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-white text-purple-950 flex items-center justify-center font-black text-base">
+                M
+              </div>
+              <span className="text-lg font-bold tracking-tight text-white">
+                Monad <span className="font-light text-purple-300">PoP</span>
+              </span>
+            </div>
+            
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Main Links */}
+          <div className="flex flex-col gap-6 my-auto">
+            <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest block mb-2 border-b border-white/10 pb-1">NAVIGATION</span>
+            {mainLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`text-3xl font-bold tracking-tight text-left transition-colors ${
+                    isActive ? "text-purple-300" : "text-white hover:text-purple-300"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+
+            <span className="text-[10px] font-mono text-purple-300 uppercase tracking-widest block mt-6 mb-2 border-b border-white/10 pb-1">APPLICATION ACTIONS</span>
+            <div className="grid grid-cols-2 gap-4">
+              {appLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`text-sm font-mono uppercase tracking-wider text-left transition-colors ${
+                      isActive ? "text-purple-300 font-bold" : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Footer Actions / Wallet status inside mobile menu */}
+          <div className="border-t border-white/10 pt-6 space-y-4">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse"></span>
+              <span className="font-mono text-xs tracking-wider text-purple-200">MONAD TESTNET (10143)</span>
+            </div>
+            
+            <div className="flex items-center justify-between gap-4">
+              {renderAuthButton(true)}
+            </div>
+          </div>
         </div>
       )}
-    </nav>
+      
+      {/* Spacer to push content below the nav bar when fixed */}
+      <div className="h-[84px] w-full"></div>
+    </>
   );
 }
