@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monad PoP — Receipts you cannot lose.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#636262",
+                    "primary-fixed-dim": "#c8bfff",
+                    "surface-container-high": "#ebe6f2",
+                    "primary-fixed": "#e5deff",
+                    "primary": "#5b43ce",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "inverse-surface": "#312f38",
+                    "surface-variant": "#e5e0ec",
+                    "background": "#fdf8ff",
+                    "surface-bright": "#fdf8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#fdf8ff",
+                    "tertiary-container": "#737575",
+                    "on-surface": "#1c1a23",
+                    "surface-container": "#f1ecf8",
+                    "outline-variant": "#c9c4d6",
+                    "inverse-primary": "#c8bfff",
+                    "surface-container-highest": "#e5e0ec",
+                    "primary-container": "#745ee9",
+                    "on-primary-fixed": "#1a0063",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-tint": "#5d46d1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#ddd8e4",
+                    "inverse-on-surface": "#f4effb",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#4528b8",
+                    "surface-container-low": "#f7f1fe",
+                    "on-tertiary-container": "#fdfcfc",
+                    "secondary": "#5f5e5e",
+                    "on-primary-container": "#fffbff",
+                    "on-background": "#1c1a23",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#484554",
+                    "tertiary-fixed": "#e2e2e2",
+                    "outline": "#787585",
+                    "error": "#ba1a1a",
+                    "tertiary": "#5b5c5c",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Outfit"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .receipt-texture {
+            background-image: radial-gradient(circle, #e2e2e2 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .perforated-edge {
+            mask-image: radial-gradient(circle, transparent 6px, black 6px);
+            mask-size: 20px 20px;
+            mask-position: 0 -10px;
+        }
+        .reg-mark { position: absolute; width: 12px; height: 12px; border: 1px solid #c9c4d6; }
+        .reg-tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+        .reg-tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+        .reg-bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+        .reg-br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-surface border-b border-secondary-container h-16 sticky top-0 z-50">
+<nav class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto h-full">
+<div class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Monad PoP</div>
+<div class="hidden md:flex gap-8 items-center h-full">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Receipt Wallet</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Verify</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Merchant</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Assistant</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="hidden lg:inline font-label-mono text-label-mono text-primary bg-primary-container/10 px-3 py-1 rounded-full">Monad Testnet</span>
+<button class="bg-primary text-on-primary px-6 py-2 font-label-caps text-label-caps rounded-lg hover:opacity-90 active:scale-95 transition-all">Connect Wallet</button>
+</div>
+</nav>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="py-16 md:py-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto border-x border-secondary-container min-h-[819px] flex flex-col md:flex-row items-center gap-16 relative">
+<!-- Decorative Registration Marks for the Page Body -->
+<div class="reg-mark reg-tl"></div>
+<div class="reg-mark reg-tr"></div>
+<div class="flex-1 space-y-8">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg leading-tight">
+                    Receipts you <br/><span class="italic text-primary">cannot lose.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
+                    Secure, tamper-evident purchase credentials on Monad. Transitioning from cold blockchain hashes to tactile, trustworthy digital documents.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4">
+<button class="bg-primary text-on-primary px-8 py-4 font-label-caps text-label-caps rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                        Open receipt wallet
+                    </button>
+<button class="border border-outline px-8 py-4 font-label-caps text-label-caps rounded-xl hover:bg-surface-container-low transition-colors">
+                        Verify a receipt
+                    </button>
+</div>
+</div>
+<!-- Receipt Specimen -->
+<div class="flex-1 w-full max-w-md relative">
+<div class="bg-surface-container-lowest border border-outline-variant p-8 rounded-lg shadow-sm relative overflow-hidden group">
+<!-- Serrated Top Edge Detail -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-white border-b border-dashed border-outline-variant"></div>
+<div class="flex justify-between items-start mb-8">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-60 mb-1">MERCHANT</p>
+<h3 class="font-headline-md text-headline-md">Nordic Sound</h3>
+</div>
+<div class="w-12 h-12 flex items-center justify-center border border-primary text-primary rounded-full">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="border-y border-secondary-container py-6 space-y-4 mb-8">
+<div class="flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PRODUCT</span>
+<span class="font-label-mono text-label-mono text-right">Aura Headphones v.2</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">DATE</span>
+<span class="font-label-mono text-label-mono text-right">2024-10-12 14:32</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">WARRANTY</span>
+<span class="font-label-mono text-label-mono text-right">24 MONTHS (ACTIVE)</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-4 text-center">
+<div class="bg-primary/10 text-primary flex items-center gap-2 px-4 py-2 rounded-full font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                            Verified on Monad
+                        </div>
+<div class="font-label-mono text-label-mono text-[10px] text-on-surface-variant tracking-widest break-all px-4">
+                            0x71C7656EC7AB88B098DEF...C5A84194410192B067
+                        </div>
+</div>
+<!-- Decorative Receipt Bottom -->
+<div class="mt-8 pt-4 border-t border-dashed border-outline-variant flex justify-between items-center opacity-30">
+<div class="flex gap-1">
+<div class="w-2 h-2 bg-on-surface-variant rounded-full"></div>
+<div class="w-2 h-2 bg-on-surface-variant rounded-full"></div>
+<div class="w-2 h-2 bg-on-surface-variant rounded-full"></div>
+</div>
+<span class="font-label-mono text-[10px]">#836EF9-LEDGER</span>
+</div>
+</div>
+<!-- Stacked sheets effect -->
+<div class="absolute -bottom-2 -right-2 w-full h-full border border-outline-variant bg-surface rounded-lg -z-10"></div>
+<div class="absolute -bottom-4 -right-4 w-full h-full border border-outline-variant/50 bg-surface rounded-lg -z-20"></div>
+</div>
+</section>
+<!-- Process Flow Section -->
+<section class="bg-surface-container-low border-y border-secondary-container py-24">
+<div class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="text-center max-w-2xl mx-auto mb-16">
+<span class="font-label-caps text-label-caps text-primary tracking-widest">ECOSYSTEM WORKFLOW</span>
+<h2 class="font-headline-md text-headline-md mt-2 text-3xl">The journey of a Monad Receipt</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-0 border border-outline-variant">
+<div class="p-12 bg-surface border-r border-outline-variant hover:bg-surface-container transition-colors group">
+<div class="mb-8 w-12 h-12 flex items-center justify-center bg-primary text-on-primary rounded-lg font-label-mono">01</div>
+<h4 class="font-label-caps text-label-caps mb-2">ISSUE</h4>
+<p class="font-body-md text-on-surface-variant">Merchant broadcasts a secure minting event upon purchase confirmation. The data is encrypted using Zero-Knowledge proofs.</p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</div>
+</div>
+<div class="p-12 bg-surface border-r border-outline-variant hover:bg-surface-container transition-colors group">
+<div class="mb-8 w-12 h-12 flex items-center justify-center bg-primary text-on-primary rounded-lg font-label-mono">02</div>
+<h4 class="font-label-caps text-label-caps mb-2">KEEP</h4>
+<p class="font-body-md text-on-surface-variant">Credentials land in your decentralized wallet. Unlike paper or emails, they cannot be deleted, altered, or lost in your inbox.</p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</div>
+</div>
+<div class="p-12 bg-surface hover:bg-surface-container transition-colors group">
+<div class="mb-8 w-12 h-12 flex items-center justify-center bg-primary text-on-primary rounded-lg font-label-mono">03</div>
+<h4 class="font-label-caps text-label-caps mb-2">VERIFY</h4>
+<p class="font-body-md text-on-surface-variant">Instant secondary market verification or warranty claims. Prove ownership without revealing sensitive personal details.</p>
+<div class="mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Privacy Comparison Section -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto border-x border-secondary-container">
+<div class="flex flex-col md:flex-row gap-16 items-start">
+<div class="flex-1 sticky top-32">
+<h2 class="font-display-lg-mobile md:font-headline-md text-3xl mb-6">Selective Transparency</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
+                        The ledger is public, but your lifestyle isn't. We use Monad's high-throughput architecture to decouple transaction metadata from product specifics.
+                    </p>
+<div class="p-6 bg-primary-container/5 border-l-4 border-primary rounded-r-lg italic text-on-surface-variant">
+                        "Ownership is absolute. Identity is optional."
+                    </div>
+</div>
+<div class="flex-1 w-full bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-6 font-label-caps text-label-caps text-on-surface-variant">DATA FIELD</th>
+<th class="p-6 font-label-caps text-label-caps text-primary">PRIVATE (USER)</th>
+<th class="p-6 font-label-caps text-label-caps text-secondary">PUBLIC (LEDGER)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-secondary-container">
+<tr>
+<td class="p-6 font-label-mono text-label-mono">Asset ID</td>
+<td class="p-6 font-body-md">Aura Headphones v.2</td>
+<td class="p-6 font-label-mono text-[12px] opacity-60">0x71C...4101</td>
+</tr>
+<tr>
+<td class="p-6 font-label-mono text-label-mono">Value</td>
+<td class="p-6 font-body-md">$349.00 USD</td>
+<td class="p-6 font-label-mono text-[12px] opacity-60">HASHED_BLOB_82</td>
+</tr>
+<tr>
+<td class="p-6 font-label-mono text-label-mono">Merchant</td>
+<td class="p-6 font-body-md">Nordic Sound Stockholm</td>
+<td class="p-6 font-label-mono text-[12px] opacity-60">MONAD_PTR_091</td>
+</tr>
+<tr>
+<td class="p-6 font-label-mono text-label-mono">Timestamp</td>
+<td class="p-6 font-body-md">Oct 12, 14:32:01</td>
+<td class="p-6 font-label-mono text-[12px] opacity-60">1728743521</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="bg-on-surface text-surface rounded-2xl p-12 md:p-24 text-center relative overflow-hidden group">
+<!-- Registration Marks inside CTA -->
+<div class="reg-mark border-outline-variant/30 reg-tl"></div>
+<div class="reg-mark border-outline-variant/30 reg-tr"></div>
+<div class="reg-mark border-outline-variant/30 reg-bl"></div>
+<div class="reg-mark border-outline-variant/30 reg-br"></div>
+<h2 class="font-display-lg text-display-lg mb-8 leading-tight">Start your verified <br/>ledger today.</h2>
+<div class="flex flex-col sm:flex-row gap-6 justify-center">
+<button class="bg-primary text-white px-12 py-5 font-label-caps text-label-caps rounded-xl hover:scale-105 transition-transform active:scale-95 shadow-xl shadow-primary/40">
+                        Launch Web App
+                    </button>
+<button class="border border-outline-variant text-surface px-12 py-5 font-label-caps text-label-caps rounded-xl hover:bg-surface/10 transition-colors">
+                        Read Documentation
+                    </button>
+</div>
+<!-- Background decoration -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[120px] -mr-32 -mt-32"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[120px] -ml-32 -mb-32"></div>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="bg-surface-container-low border-t border-secondary-container">
+<div class="w-full py-16 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+<div class="space-y-6 max-w-sm">
+<div class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Monad PoP</div>
+<p class="font-body-md text-on-surface-variant opacity-80">
+                    The authoritative ledger for physical and digital purchase verification. Powered by Monad.
+                </p>
+<p class="font-label-caps text-label-caps text-on-surface-variant/60">
+                    © 2024 Monad PoP — Proof of Purchase Ledger
+                </p>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-3 gap-12">
+<div class="space-y-4">
+<h5 class="font-label-caps text-label-caps text-on-surface">Platform</h5>
+<ul class="space-y-3 font-body-md text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Receipt Wallet</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Verification Tool</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Merchant Portal</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h5 class="font-label-caps text-label-caps text-on-surface">Resources</h5>
+<ul class="space-y-3 font-body-md text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Monad Explorer</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Testnet Status</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h5 class="font-label-caps text-label-caps text-on-surface">Legal</h5>
+<ul class="space-y-3 font-body-md text-on-surface-variant">
+<li><a class="hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Support</a></li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Bottom Bar -->
+<div class="border-t border-secondary-container/50 py-8 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+<span class="font-label-mono text-[12px] text-on-surface-variant">Network Status: Operational</span>
+</div>
+<span class="font-label-mono text-[12px] text-on-surface-variant/40">v1.0.4-ledger</span>
+</div>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">terminal</span></a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple Micro-interaction: Observe and animate on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-8');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

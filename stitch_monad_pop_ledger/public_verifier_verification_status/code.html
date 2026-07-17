@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monad PoP — Public Receipt Verifier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .perforated-edge {
+            background-image: radial-gradient(circle, transparent 70%, #fdf8ff 70%);
+            background-size: 16px 16px;
+            background-position: 0 -8px;
+            height: 8px;
+            width: 100%;
+        }
+        .registration-mark {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: #c9c4d6;
+        }
+        .scan-line {
+            height: 2px;
+            background: #5b43ce;
+            box-shadow: 0 0 15px #745ee9;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            animation: scan 3s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0%, 100% { top: 0; }
+            50% { top: 100%; }
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#636262",
+                    "primary-fixed-dim": "#c8bfff",
+                    "surface-container-high": "#ebe6f2",
+                    "primary-fixed": "#e5deff",
+                    "primary": "#5b43ce",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "inverse-surface": "#312f38",
+                    "surface-variant": "#e5e0ec",
+                    "background": "#fdf8ff",
+                    "surface-bright": "#fdf8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#fdf8ff",
+                    "tertiary-container": "#737575",
+                    "on-surface": "#1c1a23",
+                    "surface-container": "#f1ecf8",
+                    "outline-variant": "#c9c4d6",
+                    "inverse-primary": "#c8bfff",
+                    "surface-container-highest": "#e5e0ec",
+                    "primary-container": "#745ee9",
+                    "on-primary-fixed": "#1a0063",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-tint": "#5d46d1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#ddd8e4",
+                    "inverse-on-surface": "#f4effb",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#4528b8",
+                    "surface-container-low": "#f7f1fe",
+                    "on-tertiary-container": "#fdfcfc",
+                    "secondary": "#5f5e5e",
+                    "on-primary-container": "#fffbff",
+                    "on-background": "#1c1a23",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#484554",
+                    "tertiary-fixed": "#e2e2e2",
+                    "outline": "#787585",
+                    "error": "#ba1a1a",
+                    "tertiary": "#5b5c5c",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Outfit"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<nav class="bg-surface border-b border-secondary-container flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-16 relative z-50">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Monad PoP</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-medium font-label-caps text-label-caps" href="#">Receipt Wallet</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-medium font-label-caps text-label-caps" href="#">Verify</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-medium font-label-caps text-label-caps" href="#">Merchant</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-medium font-label-caps text-label-caps" href="#">Assistant</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="hidden md:block font-label-mono text-label-mono text-on-surface-variant opacity-60">Monad Testnet</span>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-xl font-label-caps text-label-caps hover:bg-primary-container transition-all active:scale-95">Connect Wallet</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center py-12 px-margin-mobile md:px-margin-desktop relative">
+<!-- Registration Marks for the Canvas -->
+<div class="absolute top-8 left-8 registration-mark border-t-2 border-l-2"></div>
+<div class="absolute top-8 right-8 registration-mark border-t-2 border-r-2"></div>
+<div class="absolute bottom-8 left-8 registration-mark border-b-2 border-l-2"></div>
+<div class="absolute bottom-8 right-8 registration-mark border-b-2 border-r-2"></div>
+<!-- Verification Input Section -->
+<div class="w-full max-w-2xl text-center mb-16">
+<h1 class="font-display-lg text-display-lg mb-4">Public Verifier</h1>
+<p class="text-on-surface-variant mb-12 font-body-lg">Validate any Monad-issued Proof of Purchase ledger entry instantly.</p>
+<div class="relative group">
+<input class="w-full bg-transparent border-b-2 border-outline-variant focus:border-primary px-4 py-6 text-center text-headline-md font-label-mono focus:outline-none transition-all placeholder:text-outline-variant/50" placeholder="Enter Receipt ID or scan QR" type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Result Panel (Success State) -->
+<div class="w-full max-w-xl bg-surface-container-lowest border border-outline-variant relative overflow-hidden">
+<!-- Serrated Top Edge -->
+<div class="perforated-edge bg-surface-container-lowest absolute top-0 left-0"></div>
+<div class="p-8 pt-12">
+<!-- Status Header -->
+<div class="flex flex-col items-center mb-10 border-b border-dashed border-outline-variant pb-8">
+<div class="w-16 h-16 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-label-caps text-label-caps text-primary tracking-[0.2em]">VERIFICATION: AUTHENTIC</span>
+<p class="text-on-surface-variant font-body-md mt-2 text-center">
+                        This credential was issued by an authorized merchant on the Monad blockchain.
+                    </p>
+</div>
+<!-- Ledger Data Rows -->
+<div class="space-y-6">
+<div class="grid grid-cols-2 gap-4 items-end">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">RECEIPT ID</span>
+<span class="font-label-mono text-label-mono text-on-surface">#MP-992-001-X</span>
+</div>
+<div class="text-right">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">TIMESTAMP</span>
+<span class="font-label-mono text-label-mono text-on-surface">2024-05-12 14:22:01 UTC</span>
+</div>
+</div>
+<div class="border-t border-secondary-container pt-6">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">MERCHANT WALLET</span>
+<div class="flex items-center gap-2">
+<span class="font-label-mono text-label-mono text-on-surface">0x71C...8E92</span>
+<span class="material-symbols-outlined text-xs text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="border-t border-secondary-container pt-6">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">PRODUCT ID HASH</span>
+<span class="font-label-mono text-label-mono text-on-surface text-xs break-all">f7a2d8e412b3c...9e21d0a55</span>
+</div>
+<div class="border-t border-secondary-container pt-6">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">RECEIPT HASH (BLOCKCHAIN RECORD)</span>
+<span class="font-label-mono text-label-mono text-on-surface text-xs break-all">0xbb89e...f110c22883377dd99aa00</span>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="mt-12 flex justify-between items-center border-t border-secondary-container pt-6">
+<a class="flex items-center gap-2 text-primary font-label-caps text-label-caps hover:underline" href="#">
+                        View in Monad Explorer
+                        <span class="material-symbols-outlined text-sm" data-icon="open_in_new">open_in_new</span>
+</a>
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-2 font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                        Export PDF
+                    </button>
+</div>
+</div>
+<!-- Side Perforations -->
+<div class="absolute top-1/2 left-0 -translate-x-1/2 w-4 h-4 rounded-full bg-background border-r border-outline-variant"></div>
+<div class="absolute top-1/2 right-0 translate-x-1/2 w-4 h-4 rounded-full bg-background border-l border-outline-variant"></div>
+</div>
+<!-- Atmospheric Visual Anchor -->
+<div class="mt-20 w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="p-6 border border-secondary-container text-center">
+<span class="material-symbols-outlined text-on-surface-variant mb-4" data-icon="shield_lock">shield_lock</span>
+<h3 class="font-label-caps text-label-caps mb-2">Immutable Proof</h3>
+<p class="text-sm text-on-surface-variant">Cryptographically signed ledger entries that cannot be altered or falsified.</p>
+</div>
+<div class="p-6 border border-secondary-container text-center">
+<span class="material-symbols-outlined text-on-surface-variant mb-4" data-icon="visibility_off">visibility_off</span>
+<h3 class="font-label-caps text-label-caps mb-2">Privacy Centric</h3>
+<p class="text-sm text-on-surface-variant">Sensitive buyer data and pricing are omitted from public verification views.</p>
+</div>
+<div class="p-6 border border-secondary-container text-center">
+<span class="material-symbols-outlined text-on-surface-variant mb-4" data-icon="account_balance">account_balance</span>
+<h3 class="font-label-caps text-label-caps mb-2">Authorized Minting</h3>
+<p class="text-sm text-on-surface-variant">Only whitelisted merchants can generate valid Proof of Purchase credentials.</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-secondary-container">
+<div class="w-full py-8 px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row items-center gap-6 mb-6 md:mb-0">
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 Monad PoP — Proof of Purchase Ledger</span>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:underline font-body-md text-sm" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:underline font-body-md text-sm" href="#">Support</a>
+</div>
+</div>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+</a>
+</div>
+</div>
+</footer>
+<!-- Interactive Micro-interactions -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95', 'opacity-80');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95', 'opacity-80');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95', 'opacity-80');
+            });
+        });
+
+        const input = document.querySelector('input');
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('scale-[1.01]');
+        });
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Control — Merchant Registry | Monad PoP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..900&family=Outfit:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#636262",
+                    "primary-fixed-dim": "#c8bfff",
+                    "surface-container-high": "#ebe6f2",
+                    "primary-fixed": "#e5deff",
+                    "primary": "#5b43ce",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "inverse-surface": "#312f38",
+                    "surface-variant": "#e5e0ec",
+                    "background": "#fdf8ff",
+                    "surface-bright": "#fdf8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#fdf8ff",
+                    "tertiary-container": "#737575",
+                    "on-surface": "#1c1a23",
+                    "surface-container": "#f1ecf8",
+                    "outline-variant": "#c9c4d6",
+                    "inverse-primary": "#c8bfff",
+                    "surface-container-highest": "#e5e0ec",
+                    "primary-container": "#745ee9",
+                    "on-primary-fixed": "#1a0063",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-tint": "#5d46d1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#ddd8e4",
+                    "inverse-on-surface": "#f4effb",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#4528b8",
+                    "surface-container-low": "#f7f1fe",
+                    "on-tertiary-container": "#fdfcfc",
+                    "secondary": "#5f5e5e",
+                    "on-primary-container": "#fffbff",
+                    "on-background": "#1c1a23",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#484554",
+                    "tertiary-fixed": "#e2e2e2",
+                    "outline": "#787585",
+                    "error": "#ba1a1a",
+                    "tertiary": "#5b5c5c",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Outfit"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .receipt-edge {
+            mask-image: radial-gradient(circle at 10px -7px, transparent 8px, white 8.5px);
+            mask-size: 20px 100%;
+            mask-repeat: repeat-x;
+        }
+        .registration-mark::before {
+            content: '+';
+            position: absolute;
+            font-family: 'JetBrains Mono';
+            font-size: 10px;
+            color: #c9c4d6;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-secondary-container sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-16">
+<div class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="token"></span>
+                Monad PoP
+            </div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Receipt Wallet</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Verify</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Merchant</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors duration-200" href="#">Assistant</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1" href="#">Admin</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="font-label-mono text-label-mono text-on-secondary-container bg-secondary-container px-3 py-1 rounded-full">Monad Testnet</span>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-6 py-2 rounded-lg hover:opacity-80 active:scale-95 transition-all">Connect Wallet</button>
+</div>
+</div>
+</header>
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-16 p-4 bg-surface-container-lowest border-r border-secondary-container">
+<div class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long"></span>
+<span class="font-label-caps text-label-caps">Receipts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user"></span>
+<span class="font-label-caps text-label-caps">Verify</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="storefront"></span>
+<span class="font-label-caps text-label-caps">Merchant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy"></span>
+<span class="font-label-caps text-label-caps">Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl transition-all scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings"></span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+<div class="my-6 border-t border-outline-variant opacity-30"></div>
+<button class="w-full bg-on-surface text-surface py-3 rounded-lg font-label-caps text-label-caps flex items-center justify-center gap-2 mb-4">
+<span class="material-symbols-outlined" data-icon="add"></span>
+                    New Verification
+                </button>
+</div>
+<div class="mt-auto pb-20">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings"></span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="lan"></span>
+<span class="font-label-caps text-label-caps">Network</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-8 bg-surface">
+<div class="max-w-5xl mx-auto space-y-12 pb-24">
+<!-- Header Section -->
+<section class="relative">
+<div class="absolute -top-4 -left-4 w-4 h-4 registration-mark"></div>
+<div class="absolute -top-4 -right-4 w-4 h-4 registration-mark rotate-90"></div>
+<div class="flex flex-col md:flex-row md:items-end justify-between border-b border-on-surface pb-6 gap-4">
+<div>
+<p class="font-label-mono text-label-mono text-primary mb-2">SYSTEM_OPERATIONS_v4.02</p>
+<h1 class="font-headline-md text-display-lg-mobile md:text-display-lg leading-tight uppercase tracking-tight">Admin Control — Merchant Registry</h1>
+</div>
+<div class="text-right hidden md:block">
+<p class="font-label-caps text-label-caps text-on-surface-variant">Last Synchronized</p>
+<p class="font-label-mono text-label-mono font-bold">2024.10.24 14:02:11 UTC</p>
+</div>
+</div>
+</section>
+<!-- Action Panel (Add Merchant) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<div class="lg:col-span-12 bg-white border border-outline-variant p-8 rounded-xl shadow-sm relative overflow-hidden">
+<div class="flex flex-col md:flex-row gap-8 items-start">
+<div class="w-full md:w-1/3">
+<h3 class="font-label-caps text-label-caps text-on-surface mb-2">Add New Merchant</h3>
+<p class="text-on-surface-variant text-sm">Grant authorization to new service providers on the Monad PoP network. Requires network admin signature.</p>
+</div>
+<div class="w-full md:w-2/3 flex flex-col md:flex-row gap-4 items-end">
+<div class="flex-1 w-full">
+<label class="font-label-caps text-label-caps text-on-secondary-variant mb-1 block">Wallet Address (0x...)</label>
+<input class="w-full border-0 border-b border-outline focus:ring-0 focus:border-primary bg-transparent font-label-mono text-label-mono py-2" placeholder="0x0000...0000" type="text"/>
+</div>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-8 py-3 rounded hover:opacity-90 transition-all flex items-center gap-2 whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="how_to_reg"></span>
+                                    Register Merchant
+                                </button>
+</div>
+</div>
+<!-- Decorative registration marks for the box -->
+<div class="absolute bottom-4 right-4 text-[10px] font-label-mono text-outline-variant">SECURE_CHANNEL_v.82</div>
+</div>
+</section>
+<!-- Registry Table -->
+<section class="bg-white border border-outline-variant rounded-xl overflow-hidden relative">
+<div class="px-8 py-6 border-b border-secondary-container flex justify-between items-center">
+<h2 class="font-label-caps text-label-caps font-bold">Authorized Registry</h2>
+<div class="flex gap-4">
+<span class="flex items-center gap-2 text-xs font-label-mono text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 32 Active
+                            </span>
+<span class="flex items-center gap-2 text-xs font-label-mono text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span> 14 Inactive
+                            </span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-8 py-4 font-label-caps text-label-caps text-on-surface-variant">Merchant Name</th>
+<th class="px-8 py-4 font-label-caps text-label-caps text-on-surface-variant">Wallet Address</th>
+<th class="px-8 py-4 font-label-caps text-label-caps text-on-surface-variant text-center">Role</th>
+<th class="px-8 py-4 font-label-caps text-label-caps text-on-surface-variant">Date Added</th>
+<th class="px-8 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-secondary-container">
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-8 py-5 font-body-md font-medium">Lumière Boutique</td>
+<td class="px-8 py-5 font-label-mono text-label-mono text-on-surface-variant">0x71C...4eD3</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+<span class="w-1 h-1 rounded-full bg-emerald-500 mr-1.5"></span>
+                                            AUTHORIZED
+                                        </span>
+</td>
+<td class="px-8 py-5 font-label-mono text-label-mono">Oct 12, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-error font-label-caps text-label-caps hover:underline">Revoke</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-8 py-5 font-body-md font-medium">Atlas Logistics</td>
+<td class="px-8 py-5 font-label-mono text-label-mono text-on-surface-variant">0xA42...22B1</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+<span class="w-1 h-1 rounded-full bg-emerald-500 mr-1.5"></span>
+                                            AUTHORIZED
+                                        </span>
+</td>
+<td class="px-8 py-5 font-label-mono text-label-mono">Sep 28, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-error font-label-caps text-label-caps hover:underline">Revoke</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors">
+<td class="px-8 py-5 font-body-md font-medium">Velvet Roasters</td>
+<td class="px-8 py-5 font-label-mono text-label-mono text-on-surface-variant">0x33C...91Fa</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+<span class="w-1 h-1 rounded-full bg-emerald-500 mr-1.5"></span>
+                                            AUTHORIZED
+                                        </span>
+</td>
+<td class="px-8 py-5 font-label-mono text-label-mono">Sep 15, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-error font-label-caps text-label-caps hover:underline">Revoke</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors opacity-50 bg-surface-container-low">
+<td class="px-8 py-5 font-body-md font-medium">Nova Digital</td>
+<td class="px-8 py-5 font-label-mono text-label-mono text-on-surface-variant">0x911...0A42</td>
+<td class="px-8 py-5 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-outline-variant text-on-surface-variant">
+                                            REVOKED
+                                        </span>
+</td>
+<td class="px-8 py-5 font-label-mono text-label-mono">Aug 30, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-primary font-label-caps text-label-caps hover:underline">Restore</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Audit Log -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="md:col-span-1">
+<h2 class="font-headline-md text-headline-md mb-2">Audit Ledger</h2>
+<p class="text-on-surface-variant text-sm">Immutable history of administrative role modifications and system status changes.</p>
+<div class="mt-8 p-4 border border-outline-variant rounded-lg border-dashed">
+<span class="font-label-mono text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock"></span>
+                                LOG_CHAIN_INTEGRITY: VERIFIED
+                            </span>
+</div>
+</div>
+<div class="md:col-span-2 space-y-4">
+<div class="bg-surface-container-low border-l-4 border-primary p-4 flex justify-between items-start">
+<div>
+<p class="font-label-caps text-[10px] text-primary mb-1 uppercase tracking-widest">Action: Role_Revoke</p>
+<p class="font-body-md text-sm">Merchant <span class="font-bold">Nova Digital</span> removed from network registry.</p>
+<p class="font-label-mono text-[11px] text-on-surface-variant mt-2">TX: 0x821...df89 | 14:02:11 UTC</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="info"></span>
+</div>
+<div class="bg-white border border-outline-variant p-4 flex justify-between items-start">
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1 uppercase tracking-widest">Action: Role_Authorize</p>
+<p class="font-body-md text-sm">Merchant <span class="font-bold">Lumière Boutique</span> granted AUTHORIZED status.</p>
+<p class="font-label-mono text-[11px] text-on-surface-variant mt-2">TX: 0x411...33a2 | Oct 12, 10:44:21</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="history"></span>
+</div>
+<div class="bg-white border border-outline-variant p-4 flex justify-between items-start">
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1 uppercase tracking-widest">Action: Role_Authorize</p>
+<p class="font-body-md text-sm">Merchant <span class="font-bold">Atlas Logistics</span> granted AUTHORIZED status.</p>
+<p class="font-label-mono text-[11px] text-on-surface-variant mt-2">TX: 0x902...fe11 | Sep 28, 09:12:05</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="history"></span>
+</div>
+<button class="w-full py-4 font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded border border-secondary-container">
+                            View Extended History (54 Entries)
+                        </button>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-secondary-container">
+<div class="w-full py-8 px-margin-desktop border-t border-secondary-container flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto">
+<div class="flex flex-col items-center md:items-start gap-1">
+<p class="font-label-caps text-label-caps text-on-surface-variant">© 2024 Monad PoP — Proof of Purchase Ledger</p>
+<p class="font-label-mono text-[10px] text-outline">NETWORK_ID: 1011 | STATUS: OPERATIONAL</p>
+</div>
+<nav class="flex gap-6 mt-6 md:mt-0">
+<a class="font-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4" href="#">Terms of Service</a>
+<a class="font-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4" href="#">Privacy Policy</a>
+<a class="font-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4" href="#">Documentation</a>
+<a class="font-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4" href="#">Support</a>
+</nav>
+</div>
+</footer>
+<!-- Fixed Decorative Element -->
+<div class="fixed bottom-8 left-8 hidden lg:block opacity-20 pointer-events-none">
+<div class="receipt-edge h-24 w-12 bg-outline-variant rotate-90 origin-bottom-left"></div>
+<p class="font-label-mono text-[10px] mt-2 uppercase tracking-tighter">Official Admin Console</p>
+</div>
+<script>
+        // Micro-interactions for administrative actions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if(this.innerText.includes('Revoke')) {
+                    if(!confirm('Are you certain you wish to revoke merchant privileges? This action is recorded on-chain.')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monad PoP — Buyer Receipt Wallet</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Outfit:wght@300;400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#636262",
+                    "primary-fixed-dim": "#c8bfff",
+                    "surface-container-high": "#ebe6f2",
+                    "primary-fixed": "#e5deff",
+                    "primary": "#5b43ce",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "inverse-surface": "#312f38",
+                    "surface-variant": "#e5e0ec",
+                    "background": "#fdf8ff",
+                    "surface-bright": "#fdf8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#fdf8ff",
+                    "tertiary-container": "#737575",
+                    "on-surface": "#1c1a23",
+                    "surface-container": "#f1ecf8",
+                    "outline-variant": "#c9c4d6",
+                    "inverse-primary": "#c8bfff",
+                    "surface-container-highest": "#e5e0ec",
+                    "primary-container": "#745ee9",
+                    "on-primary-fixed": "#1a0063",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-tint": "#5d46d1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#ddd8e4",
+                    "inverse-on-surface": "#f4effb",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#4528b8",
+                    "surface-container-low": "#f7f1fe",
+                    "on-tertiary-container": "#fdfcfc",
+                    "secondary": "#5f5e5e",
+                    "on-primary-container": "#fffbff",
+                    "on-background": "#1c1a23",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#484554",
+                    "tertiary-fixed": "#e2e2e2",
+                    "outline": "#787585",
+                    "error": "#ba1a1a",
+                    "tertiary": "#5b5c5c",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Outfit"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Outfit', sans-serif; background-color: #fdf8ff; }
+        .receipt-border { border: 1px solid #e2dfde; }
+        .perforated-line {
+            background-image: linear-gradient(to right, #c9c4d6 50%, transparent 50%);
+            background-size: 8px 1px;
+            background-repeat: repeat-x;
+            height: 1px;
+            width: 100%;
+        }
+        .registration-mark {
+            width: 8px;
+            height: 8px;
+            border: 1px solid #787585;
+            position: absolute;
+        }
+        .registration-tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+        .registration-tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+        .registration-bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+        .registration-br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+        
+        /* Custom scrollbar for ledger feel */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #fdf8ff; }
+        ::-webkit-scrollbar-thumb { background: #c9c4d6; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 p-4 bg-surface-container-lowest border-r border-secondary-container z-50">
+<div class="mb-10 px-2 flex flex-col gap-1">
+<h1 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Monad PoP</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Verified Ledger</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<!-- Active Tab: Receipts -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl transition-transform active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Receipts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all active:scale-[0.98] rounded-xl" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Verify</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all active:scale-[0.98] rounded-xl" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Merchant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all active:scale-[0.98] rounded-xl" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all active:scale-[0.98] rounded-xl" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Admin</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 flex flex-col gap-1 border-t border-secondary-container">
+<button class="w-full mb-4 py-3 px-4 bg-primary text-on-primary font-label-caps text-label-caps uppercase rounded-xl shadow-sm hover:opacity-90 transition-all">
+                New Verification
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-caps text-label-caps uppercase">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">lan</span>
+<span class="font-label-caps text-label-caps uppercase">Network</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-4 md:p-8 lg:p-12 max-w-[1400px] mx-auto w-full">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div class="relative inline-block">
+<div class="registration-mark registration-tl"></div>
+<div class="registration-mark registration-tr"></div>
+<div class="px-6 py-2">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-1">Your receipts</h2>
+<p class="font-label-mono text-label-mono text-on-surface-variant">SECURE_LEDGER_WALLET_V2.0</p>
+</div>
+<div class="registration-mark registration-bl"></div>
+<div class="registration-mark registration-br"></div>
+</div>
+<!-- Stats Strip -->
+<div class="grid grid-cols-3 gap-0 border border-outline-variant bg-surface-container-lowest">
+<div class="px-6 py-4 border-r border-outline-variant text-center">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">TOTAL RECEIPTS</p>
+<p class="font-label-mono text-xl text-primary font-bold">12</p>
+</div>
+<div class="px-6 py-4 border-r border-outline-variant text-center">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">ACTIVE WARRANTIES</p>
+<p class="font-label-mono text-xl text-on-surface font-bold">08</p>
+</div>
+<div class="px-6 py-4 text-center bg-error-container/10">
+<p class="font-label-caps text-label-caps text-error mb-1">RETURN DEADLINES</p>
+<p class="font-label-mono text-xl text-error font-bold">02</p>
+</div>
+</div>
+</header>
+<!-- Search & Filter Bar -->
+<section class="mb-8 space-y-4">
+<div class="flex flex-col lg:flex-row gap-4 items-center">
+<div class="relative w-full lg:flex-1">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-50">search</span>
+<input class="w-full bg-surface-container-lowest border-b border-outline hover:border-primary focus:border-primary focus:ring-0 font-label-mono text-label-mono pl-12 pr-4 py-4 uppercase transition-all" placeholder="SEARCH BY SKU / MERCHANT / ORDER ID..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2 w-full lg:w-auto">
+<button class="flex-1 md:flex-none font-label-caps text-label-caps px-6 py-4 border border-primary bg-primary text-on-primary">ACTIVE</button>
+<button class="flex-1 md:flex-none font-label-caps text-label-caps px-6 py-4 border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">RETURNED</button>
+<button class="flex-1 md:flex-none font-label-caps text-label-caps px-6 py-4 border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">REFUNDED</button>
+<button class="flex-1 md:flex-none font-label-caps text-label-caps px-6 py-4 border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">REPLACED</button>
+<button class="flex-1 md:flex-none font-label-caps text-label-caps px-6 py-4 border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">REVOKED</button>
+</div>
+</div>
+</section>
+<!-- Receipt Ledger Table -->
+<section class="bg-surface-container-lowest receipt-border shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant font-label-caps text-label-caps border-b border-outline-variant">
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Product</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Merchant</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold text-right">Amount</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Date</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Status</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Warranty</th>
+<th class="px-6 py-4 uppercase tracking-wider font-bold">Hash</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30 font-body-md text-body-md">
+<!-- Demo Receipt Row -->
+<tr class="hover:bg-primary-container/5 transition-colors group relative overflow-hidden">
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">Demo — Smart Watch v4</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[10px] px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">Demo — not on-chain</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Nexus Electronics</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$349.00</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-11-15</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-[11px] uppercase">Active</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">24 months left</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...7A2E</span>
+</td>
+</tr>
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5 font-bold text-on-surface">Studio Headphones Pro</td>
+<td class="px-6 py-5 text-on-surface-variant">AudioFile Inc.</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$189.50</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-10-22</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-[11px] uppercase">Active</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">18 months left</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...B34C</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5 font-bold text-on-surface">Mechanical Keyboard G9</td>
+<td class="px-6 py-5 text-on-surface-variant">Clicky Keys</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$120.00</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-09-05</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-on-secondary-container">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+<span class="font-label-caps text-[11px] uppercase">Refunded</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant opacity-30">—</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...F91A</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5 font-bold text-on-surface">OLED Monitor 32"</td>
+<td class="px-6 py-5 text-on-surface-variant">Screen Masters</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$899.00</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-08-14</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-[11px] uppercase">Active</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">8 months left</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...D421</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-6 py-5 font-bold text-on-surface">Leather Carry-on Bag</td>
+<td class="px-6 py-5 text-on-surface-variant">Vanguard Luggage</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$425.00</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-07-29</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-[11px] uppercase">Active</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">Lifetime</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...A088</span>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container transition-colors group bg-error-container/5">
+<td class="px-6 py-5 font-bold text-on-surface">Designer Espresso Maker</td>
+<td class="px-6 py-5 text-on-surface-variant">Kitchen Luxe</td>
+<td class="px-6 py-5 text-right font-label-mono font-bold">$1,299.00</td>
+<td class="px-6 py-5 font-label-mono text-on-surface-variant">2024-11-20</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 text-error">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="font-label-caps text-[11px] uppercase">Expiring soon</span>
+</span>
+</td>
+<td class="px-6 py-5 text-on-surface-variant">12 months left</td>
+<td class="px-6 py-5">
+<span class="font-label-mono text-[12px] opacity-40">0x...39CE</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer pagination / Summary line -->
+<div class="px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 bg-surface-container-low border-t border-outline-variant">
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase">Displaying 1 - 12 of 12 validated proofs</span>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Decorative Perforation Bottom -->
+<div class="mt-12 flex items-center gap-4 opacity-50">
+<div class="perforated-line"></div>
+<span class="font-label-mono text-[10px] whitespace-nowrap text-on-surface-variant uppercase">End of Verified Ledger</span>
+<div class="perforated-line"></div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="w-full fixed bottom-0 left-0 md:left-64 right-0 bg-surface-container-low border-t border-secondary-container z-40">
+<div class="w-full py-4 px-6 md:px-margin-desktop flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto">
+<div class="flex items-center gap-4 mb-2 md:mb-0">
+<p class="font-label-caps text-label-caps text-on-surface-variant">© 2024 Monad PoP — Proof of Purchase Ledger</p>
+<div class="hidden md:block w-4 h-4 border border-outline-variant opacity-30"></div>
+</div>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4 transition-all" href="#">Documentation</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4 transition-all" href="#">Support</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:underline decoration-1 underline-offset-4 transition-all" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Flash interaction mimic
+                row.classList.add('bg-primary-container/10');
+                setTimeout(() => {
+                    row.classList.remove('bg-primary-container/10');
+                }, 150);
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.01]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+</body></html>

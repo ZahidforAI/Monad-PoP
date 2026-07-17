@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monad PoP — Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .receipt-texture {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e5e0ec 0.5px, transparent 0.5px);
+            background-size: 16px 16px;
+        }
+        .perforated-edge {
+            background-image: radial-gradient(circle, transparent 70%, #f1ecf8 70%);
+            background-size: 12px 12px;
+            background-position: 0 -6px;
+            background-repeat: repeat-x;
+            height: 6px;
+            width: 100%;
+        }
+        .registration-mark {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: #c9c4d6;
+        }
+        .registration-mark-tl { top: 8px; left: 8px; border-top: 1px solid; border-left: 1px solid; }
+        .registration-mark-tr { top: 8px; right: 8px; border-top: 1px solid; border-right: 1px solid; }
+        .registration-mark-bl { bottom: 8px; left: 8px; border-bottom: 1px solid; border-left: 1px solid; }
+        .registration-mark-br { bottom: 8px; right: 8px; border-bottom: 1px solid; border-right: 1px solid; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#636262",
+                    "primary-fixed-dim": "#c8bfff",
+                    "surface-container-high": "#ebe6f2",
+                    "primary-fixed": "#e5deff",
+                    "primary": "#5b43ce",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "inverse-surface": "#312f38",
+                    "surface-variant": "#e5e0ec",
+                    "background": "#fdf8ff",
+                    "surface-bright": "#fdf8ff",
+                    "error-container": "#ffdad6",
+                    "surface": "#fdf8ff",
+                    "tertiary-container": "#737575",
+                    "on-surface": "#1c1a23",
+                    "surface-container": "#f1ecf8",
+                    "outline-variant": "#c9c4d6",
+                    "inverse-primary": "#c8bfff",
+                    "surface-container-highest": "#e5e0ec",
+                    "primary-container": "#745ee9",
+                    "on-primary-fixed": "#1a0063",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-tint": "#5d46d1",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "secondary-container": "#e2dfde",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-dim": "#ddd8e4",
+                    "inverse-on-surface": "#f4effb",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "on-primary-fixed-variant": "#4528b8",
+                    "surface-container-low": "#f7f1fe",
+                    "on-tertiary-container": "#fdfcfc",
+                    "secondary": "#5f5e5e",
+                    "on-primary-container": "#fffbff",
+                    "on-background": "#1c1a23",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#484554",
+                    "tertiary-fixed": "#e2e2e2",
+                    "outline": "#787585",
+                    "error": "#ba1a1a",
+                    "tertiary": "#5b5c5c",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "gutter": "24px",
+                    "margin-desktop": "48px",
+                    "container-max": "1200px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Outfit"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Playfair Display"],
+                    "display-lg-mobile": ["Playfair Display"],
+                    "display-lg": ["Playfair Display"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-fixed">
+<!-- TopNavBar -->
+<nav class="sticky top-0 z-50 bg-surface dark:bg-surface-dim border-b border-secondary-container dark:border-outline-variant">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-16">
+<div class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface dark:text-inverse-on-surface">Monad PoP</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Receipt Wallet</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Verify</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Merchant</a>
+<a class="text-primary dark:text-primary-fixed-dim border-b-2 border-primary dark:border-primary-fixed-dim pb-1 font-label-caps text-label-caps" href="#">Assistant</a>
+<a class="text-on-surface-variant dark:text-outline-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Admin</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="hidden md:block font-label-mono text-label-mono text-primary bg-primary-fixed/30 px-3 py-1 rounded-full">Monad Testnet</span>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-caps text-label-caps active:opacity-80 active:scale-95 transition-all">Connect Wallet</button>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Desktop Only Shell) -->
+<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 p-4 pt-20 border-r border-secondary-container dark:border-outline-variant bg-surface-container-lowest dark:bg-surface-dim z-40">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-caps text-label-caps">Receipts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-caps text-label-caps">Verify</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-caps text-label-caps">Merchant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-caps text-label-caps">Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-surface-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-caps text-label-caps">Admin</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-secondary-container dark:border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">lan</span>
+<span class="font-label-caps text-label-caps">Network</span>
+</a>
+</div>
+</aside>
+<main class="md:ml-64 min-h-screen">
+<div class="max-w-4xl mx-auto px-6 py-12">
+<!-- Assistant Hero / Search -->
+<section class="mb-12 relative">
+<div class="mb-8">
+<h1 class="font-headline-md text-display-lg text-on-surface mb-2">Assistant</h1>
+<p class="text-on-surface-variant max-w-xl">Intelligent queries for your decentralized proof-of-purchase ledger. Ask about warranties, spending patterns, or item specifics.</p>
+</div>
+<!-- Privacy Note -->
+<div class="flex items-center gap-2 mb-6 text-on-surface-variant bg-surface-container-low px-4 py-2 rounded-full w-fit">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span class="text-[12px] font-medium">Assistant uses only your private authenticated receipts. Data never leaves your wallet.</span>
+</div>
+<!-- Command Bar -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full bg-white border-2 border-secondary-container focus:border-primary focus:ring-0 rounded-2xl h-16 pl-14 pr-32 font-body-lg text-body-lg transition-all shadow-sm group-hover:shadow-md" id="assistantInput" placeholder="Ask your receipts..." type="text"/>
+<div class="absolute inset-y-2 right-2 flex items-center">
+<button class="bg-primary text-white px-6 h-full rounded-xl font-label-caps text-label-caps hover:bg-primary/90 transition-all flex items-center gap-2">
+<span>Query</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Suggested Questions -->
+<div class="mt-6 flex flex-wrap gap-3">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-primary-fixed border border-secondary-container rounded-lg text-on-surface-variant font-label-caps text-label-caps transition-all" onclick="suggest('Find headphones receipt')">
+                        "Find headphones receipt"
+                    </button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-primary-fixed border border-secondary-container rounded-lg text-on-surface-variant font-label-caps text-label-caps transition-all" onclick="suggest('When does my laptop warranty end?')">
+                        "When does my laptop warranty end?"
+                    </button>
+<button class="px-4 py-2 bg-surface-container-high hover:bg-primary-fixed border border-secondary-container rounded-lg text-on-surface-variant font-label-caps text-label-caps transition-all" onclick="suggest('How much did I spend in October?')">
+                        "How much did I spend in October?"
+                    </button>
+</div>
+</section>
+<!-- Active Response (Simulated) -->
+<section class="mb-16 fade-in" id="assistantResponse">
+<div class="receipt-texture border border-secondary-container rounded-xl overflow-hidden relative shadow-sm">
+<div class="registration-mark registration-mark-tl"></div>
+<div class="registration-mark registration-mark-tr"></div>
+<div class="registration-mark registration-mark-bl"></div>
+<div class="registration-mark registration-mark-br"></div>
+<div class="p-8">
+<div class="flex items-start gap-4 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div>
+<h3 class="font-label-caps text-label-caps text-outline mb-1">ASSISTANT RESPONSE</h3>
+<p class="text-body-lg text-on-surface">Your <span class="font-bold underline decoration-primary/30">Aura Headphones (MN-8372-X)</span> warranty expires on <span class="font-label-mono text-label-mono bg-surface-container-highest px-1">Oct 12, 2026</span>. You have 24 months remaining.</p>
+</div>
+</div>
+<!-- Cited Row -->
+<div class="ml-14 border-l-2 border-primary-container pl-6 py-2">
+<p class="font-label-caps text-[10px] text-outline mb-2">CITED FROM LEDGER</p>
+<div class="flex items-center justify-between font-label-mono text-label-mono text-on-surface-variant bg-surface-container-low p-4 rounded border border-outline-variant/30">
+<div class="flex gap-4">
+<span class="text-on-surface">Oct 12, 2024</span>
+<span>#721-X992</span>
+<span class="font-bold text-on-surface">Aura Electronics</span>
+</div>
+<div class="font-bold text-primary">$349.00</div>
+</div>
+</div>
+</div>
+<div class="perforated-edge"></div>
+</div>
+</section>
+<!-- Ledger Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between border-b border-outline-variant pb-4">
+<h2 class="font-label-caps text-label-caps text-on-surface-variant">Transaction History</h2>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">filter_list</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">download</span>
+</div>
+</div>
+<!-- Dense Ledger Rows -->
+<div class="divide-y divide-secondary-container bg-white border border-secondary-container rounded-xl overflow-hidden shadow-sm">
+<!-- Header -->
+<div class="grid grid-cols-12 gap-4 px-6 py-3 bg-surface-container-low font-label-caps text-[11px] text-outline tracking-widest uppercase">
+<div class="col-span-2">Date</div>
+<div class="col-span-4">Merchant &amp; Description</div>
+<div class="col-span-2">Hash ID</div>
+<div class="col-span-2 text-right">Status</div>
+<div class="col-span-2 text-right">Amount</div>
+</div>
+<!-- Row 1 -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors items-center font-label-mono text-label-mono text-on-surface">
+<div class="col-span-2 text-on-surface-variant">2024.11.02</div>
+<div class="col-span-4 flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="font-bold">Monad Coffee Roasters</span>
+</div>
+<div class="col-span-2 text-[12px] text-outline">0x82f...a12</div>
+<div class="col-span-2 text-right">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter">Verified</span>
+</div>
+<div class="col-span-2 text-right font-bold">$12.50</div>
+</div>
+<!-- Row 2 (Highlighted/Cited) -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 bg-primary-fixed/20 hover:bg-primary-fixed/30 transition-colors items-center font-label-mono text-label-mono text-on-surface">
+<div class="col-span-2 text-on-surface-variant">2024.10.12</div>
+<div class="col-span-4 flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="font-bold">Aura Electronics</span>
+</div>
+<div class="col-span-2 text-[12px] text-outline">0x21c...d84</div>
+<div class="col-span-2 text-right">
+<span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-tighter">Warranty Active</span>
+</div>
+<div class="col-span-2 text-right font-bold">$349.00</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors items-center font-label-mono text-label-mono text-on-surface">
+<div class="col-span-2 text-on-surface-variant">2024.10.05</div>
+<div class="col-span-4 flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-purple-500"></div>
+<span class="font-bold">Whole Foods Market</span>
+</div>
+<div class="col-span-2 text-[12px] text-outline">0xb92...f11</div>
+<div class="col-span-2 text-right">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-[10px] font-bold uppercase tracking-tighter">Replaced</span>
+</div>
+<div class="col-span-2 text-right font-bold">$84.22</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-surface-container-low transition-colors items-center font-label-mono text-label-mono text-on-surface">
+<div class="col-span-2 text-on-surface-variant">2024.09.28</div>
+<div class="col-span-4 flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-red-500"></div>
+<span class="font-bold">Steam Games Ltd.</span>
+</div>
+<div class="col-span-2 text-[12px] text-outline">0x55e...e09</div>
+<div class="col-span-2 text-right">
+<span class="px-2 py-0.5 rounded-full border border-error text-error text-[10px] font-bold uppercase tracking-tighter">Revoked</span>
+</div>
+<div class="col-span-2 text-right font-bold">$59.99</div>
+</div>
+</div>
+<div class="text-center py-8">
+<button class="text-primary font-label-caps text-label-caps border border-primary/20 px-8 py-3 rounded-lg hover:bg-primary-fixed transition-all">Load More Ledger Entries</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="md:ml-64 bg-surface-container-low dark:bg-surface-dim border-t border-secondary-container dark:border-outline-variant">
+<div class="w-full py-8 px-margin-desktop border-t border-secondary-container dark:border-outline-variant flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-4 md:mb-0">© 2024 Monad PoP — Proof of Purchase Ledger</div>
+<div class="flex gap-6">
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline decoration-1 underline-offset-4 font-body-md text-body-md" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline decoration-1 underline-offset-4 font-body-md text-body-md" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline decoration-1 underline-offset-4 font-body-md text-body-md" href="#">Documentation</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:underline decoration-1 underline-offset-4 font-body-md text-body-md" href="#">Support</a>
+</div>
+</div>
+</footer>
+<script>
+        function suggest(text) {
+            const input = document.getElementById('assistantInput');
+            input.value = text;
+            input.focus();
+            
+            // Logic to simulate a search response
+            const responseSection = document.getElementById('assistantResponse');
+            responseSection.style.display = 'none';
+            setTimeout(() => {
+                responseSection.style.display = 'block';
+                responseSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+
+        // Simple typing effect for input focus
+        const input = document.getElementById('assistantInput');
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('scale-[1.01]');
+        });
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Merchant Portal | Monad PoP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..900&family=Outfit:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .receipt-perforation {
+            background-image: radial-gradient(circle, transparent 70%, #fdf8ff 75%);
+            background-size: 12px 12px;
+            background-position: 0 100%;
+            background-repeat: repeat-x;
+            height: 6px;
+            width: 100%;
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+        }
+        .registration-mark {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: #c9c4d6;
+        }
+        .loader-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#636262",
+                        "primary-fixed-dim": "#c8bfff",
+                        "surface-container-high": "#ebe6f2",
+                        "primary-fixed": "#e5deff",
+                        "primary": "#5b43ce",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "secondary-fixed": "#e5e2e1",
+                        "inverse-surface": "#312f38",
+                        "surface-variant": "#e5e0ec",
+                        "background": "#fdf8ff",
+                        "surface-bright": "#fdf8ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#fdf8ff",
+                        "tertiary-container": "#737575",
+                        "on-surface": "#1c1a23",
+                        "surface-container": "#f1ecf8",
+                        "outline-variant": "#c9c4d6",
+                        "inverse-primary": "#c8bfff",
+                        "surface-container-highest": "#e5e0ec",
+                        "primary-container": "#745ee9",
+                        "on-primary-fixed": "#1a0063",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-tint": "#5d46d1",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "secondary-container": "#e2dfde",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#ddd8e4",
+                        "inverse-on-surface": "#f4effb",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-primary-fixed-variant": "#4528b8",
+                        "surface-container-low": "#f7f1fe",
+                        "on-tertiary-container": "#fdfcfc",
+                        "secondary": "#5f5e5e",
+                        "on-primary-container": "#fffbff",
+                        "on-background": "#1c1a23",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#484554",
+                        "tertiary-fixed": "#e2e2e2",
+                        "outline": "#787585",
+                        "error": "#ba1a1a",
+                        "tertiary": "#5b5c5c",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-desktop": "48px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Outfit"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-md": ["Outfit"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-caps": ["Outfit"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 p-4 bg-surface-container-lowest border-r border-secondary-container z-50">
+<div class="mb-8 px-2">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">Monad PoP</h1>
+<p class="font-label-caps text-[10px] text-on-surface-variant tracking-widest mt-1">VERIFIED LEDGER</p>
+</div>
+<div class="mb-8 p-3 bg-primary-container/10 border border-primary/20 rounded-xl flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">verified_user</span>
+</div>
+<div>
+<p class="font-label-caps text-on-surface text-[10px]">Merchant Role</p>
+<p class="font-bold text-primary text-xs">AUTHORIZED</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-caps text-[12px]">Receipts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-caps text-[12px]">Verify</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-label-caps text-[12px]">Merchant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-label-caps text-[12px]">Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-caps text-[12px]">Admin</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-secondary-container space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-[11px]">Settings</span>
+</a>
+<div class="flex items-center justify-between px-4 py-2 mt-4 opacity-50">
+<p class="font-label-caps text-[10px]">© 2024 Monad PoP</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-margin-mobile md:p-margin-desktop relative">
+<!-- Header -->
+<header class="max-w-container-max mx-auto mb-10 flex justify-between items-end border-b border-secondary-container pb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Issue New Receipt</h2>
+<p class="text-on-surface-variant font-body-md mt-1">Create a cryptographically verified proof of purchase for your customer.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right hidden sm:block">
+<p class="font-label-caps text-[10px] text-on-surface-variant">LEDGER STATUS</p>
+<p class="text-xs font-label-mono text-primary flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                        MONAD_TESTNET_ONLINE
+                    </p>
+</div>
+</div>
+</header>
+<div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+<!-- Left: Issue Receipt Form -->
+<section class="space-y-8">
+<div class="grid grid-cols-1 gap-6">
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Buyer Wallet Address</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-label-mono transition-colors" id="input-wallet" placeholder="0x..." type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Product Name</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 transition-colors" id="input-product" placeholder="E.g. Chronos Watch" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">SKU / Reference</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-label-mono transition-colors" id="input-sku" placeholder="MON-2024-X" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Serial Number</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-label-mono transition-colors" id="input-serial" placeholder="SN-88219-00" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Amount (USD)</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-label-mono transition-colors" id="input-amount" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Warranty Expiration</label>
+<input class="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 transition-colors" id="input-warranty" type="date"/>
+</div>
+</div>
+<!-- Integrity Summary -->
+<div class="p-6 bg-surface-container-low border border-secondary-container rounded-lg relative overflow-hidden">
+<div class="registration-mark border-t border-l top-0 left-0"></div>
+<div class="registration-mark border-t border-r top-0 right-0"></div>
+<div class="registration-mark border-b border-l bottom-0 left-0"></div>
+<div class="registration-mark border-b border-r bottom-0 right-0"></div>
+<h3 class="font-label-caps text-label-caps text-primary mb-3">Integrity Architecture</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-mono text-[11px] text-on-surface">PUBLIC HASH (ON-CHAIN)</p>
+<p class="text-[12px] text-on-surface-variant">Wallet, Product SKU, Serial Hash, Timestamp</p>
+</div>
+<span class="material-symbols-outlined text-primary text-sm">lock_open</span>
+</div>
+<div class="w-full h-px bg-outline-variant/30"></div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-mono text-[11px] text-on-surface">PRIVATE STORAGE (ENCRYPTED)</p>
+<p class="text-[12px] text-on-surface-variant">Customer PII, Extended Warranty Data, Internal Notes</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-label-caps tracking-widest text-[14px] hover:bg-primary-container transition-all active:scale-95 flex justify-center items-center gap-2" onclick="simulateIssuance()">
+                    GENERATE PROOF OF PURCHASE
+                    <span class="material-symbols-outlined">qr_code_2</span>
+</button>
+</section>
+<!-- Right: Live Preview -->
+<section class="flex flex-col items-center">
+<div class="w-full max-w-sm">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden relative shadow-sm min-h-[600px] flex flex-col">
+<!-- Perforated top -->
+<div class="h-4 bg-surface-container-low border-b border-dashed border-outline-variant flex items-center justify-center">
+<div class="w-16 h-1 bg-outline-variant/20 rounded-full"></div>
+</div>
+<div class="p-8 flex-1 flex flex-col">
+<div class="text-center mb-10">
+<h4 class="font-headline-md text-headline-md text-on-surface">Monad PoP</h4>
+<p class="font-label-caps text-[10px] tracking-widest text-on-surface-variant">DIGITAL LEDGER RECEIPT</p>
+</div>
+<div class="space-y-6 flex-1">
+<div class="flex justify-between items-start">
+<div class="space-y-4">
+<div>
+<p class="font-label-caps text-[9px] text-on-surface-variant uppercase mb-1">Issue Date</p>
+<p class="font-label-mono text-xs" id="preview-date">24-MAY-2024</p>
+</div>
+<div>
+<p class="font-label-caps text-[9px] text-on-surface-variant uppercase mb-1">Recipient</p>
+<p class="font-label-mono text-xs truncate w-32" id="preview-wallet">NOT SPECIFIED</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-[9px] text-on-surface-variant uppercase mb-1">Receipt ID</p>
+<p class="font-label-mono text-xs">#RX-88219-A</p>
+</div>
+</div>
+<div class="border-t border-b border-dashed border-outline-variant py-4">
+<div class="flex justify-between mb-2">
+<p class="font-body-md text-sm" id="preview-product">Product Name</p>
+<p class="font-label-mono text-sm" id="preview-amount">$0.00</p>
+</div>
+<p class="font-label-mono text-[10px] text-on-surface-variant" id="preview-sku">SKU: ---</p>
+<p class="font-label-mono text-[10px] text-on-surface-variant" id="preview-serial">SN: ---</p>
+</div>
+<div>
+<p class="font-label-caps text-[9px] text-on-surface-variant uppercase mb-1">Warranty Coverage</p>
+<p class="font-body-md text-xs" id="preview-warranty">Expires: No date set</p>
+</div>
+<div class="mt-auto pt-8 flex flex-col items-center">
+<div class="w-32 h-32 bg-surface-container-high rounded border border-outline-variant flex items-center justify-center grayscale opacity-30">
+<span class="material-symbols-outlined text-4xl">qr_code_2</span>
+</div>
+<p class="font-label-mono text-[9px] text-on-surface-variant mt-4">HASH: 0x93F...A2E1</p>
+</div>
+</div>
+<div class="mt-8 border-t border-outline-variant pt-4 text-center">
+<p class="font-label-caps text-[10px] text-primary">AUTHORIZED BY MONAD_POP_M_01</p>
+</div>
+</div>
+<!-- Perforation bottom effect -->
+<div class="receipt-perforation"></div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Overlay States -->
+<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" id="loading-overlay">
+<div class="bg-surface p-12 rounded-2xl shadow-2xl text-center max-w-sm border border-outline-variant">
+<div class="mb-6 flex justify-center">
+<span class="material-symbols-outlined text-5xl text-primary loader-spin">sync</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Confirming Transaction</h3>
+<p class="text-on-surface-variant text-sm">Broadcasting your receipt proof to the Monad PoP Ledger...</p>
+</div>
+</div>
+<div class="fixed inset-0 bg-on-surface/60 backdrop-blur-md z-[101] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" id="success-overlay">
+<div class="bg-surface rounded-2xl shadow-2xl max-w-md w-full mx-margin-mobile overflow-hidden border-2 border-primary">
+<div class="p-8 text-center border-b border-outline-variant">
+<div class="w-16 h-16 bg-primary text-on-primary rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Receipt Issued!</h3>
+<p class="text-on-surface-variant text-sm">Proof of Purchase has been successfully anchored to the ledger.</p>
+</div>
+<div class="p-8 bg-surface-container-low flex flex-col items-center">
+<div class="p-4 bg-white rounded-xl shadow-inner border border-outline-variant mb-6">
+<img class="w-40 h-40" data-alt="A clean, high-contrast QR code centered on a white card. The style is minimalist and clinical, with sharp edges and no gradients. The lighting is bright and even, reinforcing the premium fintech document aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvs_Kom9yiPKw-xWfuP5C7GG8zrDfuw3qpMc4BwBqLS4AzLL5vbnhXk39LBoFZMm1LnVHGPe6LLV1wXcdMG3_MNnqutL1EXnUuGYq1QxLxtxWkLnNfiljv-bv_s5tuF7m74cKFW4-wXSTSBcSlVoE8GPsjoX2Ua0hvwKgWqjX2R4OXB3Q9yIzKWdLwz7nCp9keu2nOFEwAY4A4mHMYLXIlarVc75SiMoe-baQzwjGfhYlRV79YDbNiQfCg9pjjUM872oUqEREz_6c"/>
+</div>
+<div class="w-full space-y-3">
+<button class="w-full flex items-center justify-center gap-2 font-label-caps text-[12px] bg-on-surface text-surface py-3 rounded-xl">
+                        SHARE RECEIPT LINK
+                        <span class="material-symbols-outlined text-sm">share</span>
+</button>
+<button class="w-full flex items-center justify-center gap-2 font-label-caps text-[12px] border border-outline-variant py-3 rounded-xl hover:bg-surface-container-high transition-all" onclick="closeSuccess()">
+                        ISSUE ANOTHER
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Live Preview Logic
+        const inputs = {
+            wallet: document.getElementById('input-wallet'),
+            product: document.getElementById('input-product'),
+            sku: document.getElementById('input-sku'),
+            serial: document.getElementById('input-serial'),
+            amount: document.getElementById('input-amount'),
+            warranty: document.getElementById('input-warranty')
+        };
+
+        const previews = {
+            wallet: document.getElementById('preview-wallet'),
+            product: document.getElementById('preview-product'),
+            sku: document.getElementById('preview-sku'),
+            serial: document.getElementById('preview-serial'),
+            amount: document.getElementById('preview-amount'),
+            warranty: document.getElementById('preview-warranty'),
+            date: document.getElementById('preview-date')
+        };
+
+        // Set initial date
+        const now = new Date();
+        previews.date.innerText = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+        function updatePreview() {
+            previews.wallet.innerText = inputs.wallet.value || 'NOT SPECIFIED';
+            previews.product.innerText = inputs.product.value || 'Product Name';
+            previews.sku.innerText = `SKU: ${inputs.sku.value || '---'}`;
+            previews.serial.innerText = `SN: ${inputs.serial.value || '---'}`;
+            previews.amount.innerText = inputs.amount.value ? `$${parseFloat(inputs.amount.value).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '$0.00';
+            previews.warranty.innerText = inputs.warranty.value ? `Expires: ${new Date(inputs.warranty.value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'Expires: No date set';
+        }
+
+        Object.keys(inputs).forEach(key => {
+            inputs[key].addEventListener('input', updatePreview);
+        });
+
+        // Overlay Interactions
+        function simulateIssuance() {
+            const loading = document.getElementById('loading-overlay');
+            loading.classList.remove('hidden');
+            setTimeout(() => loading.classList.add('opacity-100'), 10);
+
+            setTimeout(() => {
+                loading.classList.remove('opacity-100');
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                    const success = document.getElementById('success-overlay');
+                    success.classList.remove('hidden');
+                    setTimeout(() => success.classList.add('opacity-100'), 10);
+                }, 300);
+            }, 2500);
+        }
+
+        function closeSuccess() {
+            const success = document.getElementById('success-overlay');
+            success.classList.remove('opacity-100');
+            setTimeout(() => {
+                success.classList.add('hidden');
+                // Optional: reset form
+                Object.values(inputs).forEach(i => i.value = '');
+                updatePreview();
+            }, 300);
+        }
+    </script>
+</body></html>
