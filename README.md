@@ -47,12 +47,13 @@ graph TD
 ## Features
 
 1. **Secure SIWE Authentication**: A cryptographically signed session cookie flow verifying ownership of EVM wallets using nonces.
-2. **On-Chain Credentialing**: Receipts are canonicalized, hashed using Keccak256, and recorded on the Monad Testnet blockchain.
-3. **Decoupled Privacy Pattern**: Heavy receipt payloads (items, SKUs, prices) are stored secure off-chain in the SQLite database, while only cryptographically secure hashes are logged on-chain.
-4. **Dynamic Deadlines**: Auto-calculates and tracks return periods and warranty countdowns with visual indicators.
-5. **Public Verification Pages**: Generates shareable, authentication-free public verification links and QR codes. Recalculates hashes from off-chain data and compares directly with Monad on-chain proofs.
-6. **Smart AI Assistant**: Classified chat assistant powered by Groq (`llama-3.3-70b-versatile`). Checks warranties, return windows, history, and status based *only* on context retrieved from the database.
-7. **Robust Admin Portal**: Allows quick testnet registration of merchants to enable role permissions for issuing receipts.
+2. **Product Passport Lifecycle**: Upgraded receipt credentials into dynamic digital product passports. Supports states: `Active`, `Returned`, `Refunded`, `Replaced`, and `Revoked`.
+3. **Escrow Marketplace**: Peer-to-peer physical product marketplace on Monad Testnet. Supports listing owned passports, purchase requests, locking funds in escrow, shipping transitions, buyer confirmation, and admin resolutions.
+4. **Field-Level Data Encryption**: Implements Node.js native `crypto` AES-256-GCM encryption for private fields (Display Name, SKU, Serial Number, Return/Warranty periods) in the database. Only verified owners or the issuing merchant can decrypt and view these details.
+5. **Decoupled Privacy Pattern**: Heavy receipt payloads and encrypted fields are stored off-chain in the SQLite database, while only cryptographically secure hashes are logged on-chain.
+6. **Public Verification Pages**: Generates shareable, authentication-free public verification links and QR codes. Recalculates hashes from off-chain data and compares directly with Monad on-chain proofs using privacy-compliant DTO structures.
+7. **Smart AI Assistant**: Classified chat assistant powered by Groq (`llama-3.3-70b-versatile`). Checks warranties, return windows, history, and status based *only* on context retrieved from the database and decrypted on-the-fly for the authenticated owner.
+8. **Robust Admin Portal**: Allows quick testnet registration of merchants to enable role permissions for issuing passports.
 
 ---
 
@@ -133,6 +134,7 @@ AUTH_SECRET="dev-secret-key-must-be-at-least-32-characters-long-for-hmac-sha256"
 NEXT_PUBLIC_MONAD_RPC_URL="https://testnet-rpc.monad.xyz"
 NEXT_PUBLIC_MONAD_POP_CONTRACT_ADDRESS="0x5FbDB2315678afecb367f032d93F642f64180aa3" # Set your deployed address
 GROQ_API_KEY="gsk_..." # Paste your Groq API key here
+DATA_ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" # Hex key for AES data encryption
 ```
 
 Apply database migrations:
