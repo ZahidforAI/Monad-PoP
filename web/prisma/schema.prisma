@@ -1,0 +1,46 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Receipt {
+  id                 String    @id @default(cuid())
+  chainReceiptId     String    @unique
+  contractAddress    String
+  chainId            Int
+  merchantAddress    String
+  buyerAddress       String
+  merchantReference  String
+  productIdentifier  String
+  productName        String
+  sku                String?
+  serialNumber       String?
+  amount             String
+  currency           String
+  purchasedAt        DateTime
+  returnDeadline     DateTime?
+  warrantyUntil      DateTime?
+  receiptJson        String
+  receiptHash        String
+  issueTxHash        String
+  status             String    // "Active", "Returned", "Refunded", "Replaced", "Revoked"
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([buyerAddress])
+  @@index([merchantAddress])
+  @@index([receiptHash])
+}
+
+model MerchantProfile {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  displayName   String
+  storeCode     String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
