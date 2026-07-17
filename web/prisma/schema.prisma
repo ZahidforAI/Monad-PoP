@@ -7,33 +7,82 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Receipt {
-  id                 String    @id @default(cuid())
-  chainReceiptId     String    @unique
-  contractAddress    String
-  chainId            Int
-  merchantAddress    String
-  buyerAddress       String
-  merchantReference  String
-  productIdentifier  String
-  productName        String
-  sku                String?
-  serialNumber       String?
-  amount             String
-  currency           String
-  purchasedAt        DateTime
-  returnDeadline     DateTime?
-  warrantyUntil      DateTime?
-  receiptJson        String
-  receiptHash        String
-  issueTxHash        String
-  status             String    // "Active", "Returned", "Refunded", "Replaced", "Revoked"
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+model ProductPassport {
+  id                  String               @id @default(cuid())
+  chainPassportId     Int                  @unique
+  contractAddress     String
+  chainId             Int
+  productId           String               // hex representation of bytes32
+  originalReceiptHash String               @unique
+  merchantAddress     String
+  originalBuyerAddress String
+  currentOwnerAddress String
+  purchasedAt         DateTime
+  warrantyUntil       DateTime?
+  status              String               // "Active", "Returned", "Refunded", "Replaced", "Revoked"
+  
+  // Public Product Metadata
+  productName         String
+  brand               String
+  model               String
+  imageUrl            String?
+  description         String?
+  merchantName        String
+  metadataHash        String
+  
+  // Transactions
+  issueTxHash         String
+  statusTxHash        String?
 
-  @@index([buyerAddress])
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relations
+  privateData         PrivatePassportData?
+  listings            Listing[]
+
   @@index([merchantAddress])
-  @@index([receiptHash])
+  @@index([currentOwnerAddress])
+  @@index([originalReceiptHash])
+}
+
+model PrivatePassportData {
+  id               String          @id @default(cuid())
+  passportId       Int             @unique
+  passport         ProductPassport @relation(fields: [passportId], references: [chainPassportId], onDelete: Cascade)
+  
+  // Encrypted fields (AES-256-GCM)
+  encryptedPayload String          // holds encrypted JSON of serialNumber, receiptJson, sku, merchantReference, privateBuyerInfo, privateNotes, warrantyDocs
+  iv               String
+  tag              String
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model Listing {
+  id             String          @id @default(cuid())
+  chainListingId Int             @unique
+  passportId     Int
+  passport       ProductPassport @relation(fields: [passportId], references: [chainPassportId])
+  sellerAddress  String
+  buyerAddress   String?
+  price          String          // Price in MON (wei as string)
+  metadataHash   String
+  saleProofHash  String?
+  status         String          // "Active", "Requested", "Accepted", "Completed", "Cancelled"
+  escrowStatus   String          // "None", "Funded", "Refunded", "Settled"
+  
+  createdAt      DateTime        @default(now())
+  acceptedAt     DateTime?
+  completedAt    DateTime?
+  
+  createTxHash   String?
+  actionTxHash   String?         // Hash for cancel, request, accept, reject, confirm
+
+  @@index([passportId])
+  @@index([sellerAddress])
+  @@index([buyerAddress])
 }
 
 model MerchantProfile {
