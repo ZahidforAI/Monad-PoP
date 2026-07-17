@@ -31,7 +31,7 @@ export const publicClient = createPublicClient({
   transport: http(),
 });
 
-// The MonadPoP contract ABI (only containing functions needed for verification and read checks)
+// The fully upgraded MonadPoP contract ABI
 export const monadPoPAbi = [
   {
     inputs: [],
@@ -50,6 +50,196 @@ export const monadPoPAbi = [
     stateMutability: "view",
     type: "function",
   },
+  
+  // Passport Functions
+  {
+    inputs: [
+      { internalType: "address", name: "buyer", type: "address" },
+      { internalType: "bytes32", name: "productId", type: "bytes32" },
+      { internalType: "bytes32", name: "receiptHash", type: "bytes32" },
+      { internalType: "uint64", name: "purchasedAt", type: "uint64" },
+      { internalType: "uint64", name: "warrantyUntil", type: "uint64" },
+    ],
+    name: "issuePassport",
+    outputs: [{ internalType: "uint256", name: "passportId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "passportId", type: "uint256" }],
+    name: "getPassport",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "id", type: "uint256" },
+          { internalType: "bytes32", name: "productId", type: "bytes32" },
+          { internalType: "bytes32", name: "originalReceiptHash", type: "bytes32" },
+          { internalType: "address", name: "merchant", type: "address" },
+          { internalType: "address", name: "originalBuyer", type: "address" },
+          { internalType: "address", name: "currentOwner", type: "address" },
+          { internalType: "uint64", name: "purchasedAt", type: "uint64" },
+          { internalType: "uint64", name: "warrantyUntil", type: "uint64" },
+          { internalType: "uint8", name: "status", type: "uint8" },
+        ],
+        internalType: "struct MonadPoP.ProductPassport",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "passportId", type: "uint256" }],
+    name: "passportExists",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "passportId", type: "uint256" },
+      { internalType: "uint8", name: "newStatus", type: "uint8" },
+    ],
+    name: "updatePassportStatus",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "oldPassportId", type: "uint256" },
+      { internalType: "bytes32", name: "newReceiptHash", type: "bytes32" },
+      { internalType: "uint64", name: "newWarrantyUntil", type: "uint64" },
+    ],
+    name: "replacePassport",
+    outputs: [{ internalType: "uint256", name: "newPassportId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "passportId", type: "uint256" },
+      { internalType: "bytes32", name: "candidateHash", type: "bytes32" },
+    ],
+    name: "verifyReceiptHash",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "passportId", type: "uint256" }],
+    name: "currentOwnerOf",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+
+  // Marketplace Escrow Functions
+  {
+    inputs: [
+      { internalType: "uint256", name: "passportId", type: "uint256" },
+      { internalType: "uint256", name: "price", type: "uint256" },
+      { internalType: "bytes32", name: "metadataHash", type: "bytes32" },
+    ],
+    name: "createListing",
+    outputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "cancelListing",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "requestPurchase",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "acceptPurchaseRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "rejectPurchaseRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "cancelPurchaseRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "confirmReceived",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "listingId", type: "uint256" }],
+    name: "getListing",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "id", type: "uint256" },
+          { internalType: "uint256", name: "passportId", type: "uint256" },
+          { internalType: "address", name: "seller", type: "address" },
+          { internalType: "address", name: "buyer", type: "address" },
+          { internalType: "uint256", name: "price", type: "uint256" },
+          { internalType: "bytes32", name: "metadataHash", type: "bytes32" },
+          { internalType: "bytes32", name: "saleProofHash", type: "bytes32" },
+          { internalType: "uint64", name: "createdAt", type: "uint64" },
+          { internalType: "uint64", name: "acceptedAt", type: "uint64" },
+          { internalType: "uint64", name: "completedAt", type: "uint64" },
+          { internalType: "uint8", name: "status", type: "uint8" },
+        ],
+        internalType: "struct MonadPoP.Listing",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "listingId", type: "uint256" },
+      { internalType: "bool", name: "refundBuyer", type: "bool" },
+    ],
+    name: "resolveStuckEscrow",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+
+  // Backward Compatibility Aliases
+  {
+    inputs: [
+      { internalType: "address", name: "buyer", type: "address" },
+      { internalType: "bytes32", name: "productId", type: "bytes32" },
+      { internalType: "bytes32", name: "receiptHash", type: "bytes32" },
+      { internalType: "uint64", name: "purchasedAt", type: "uint64" },
+      { internalType: "uint64", name: "warrantyUntil", type: "uint64" },
+    ],
+    name: "issueReceipt",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
   {
     inputs: [{ internalType: "uint256", name: "receiptId", type: "uint256" }],
     name: "getReceipt",
@@ -57,15 +247,16 @@ export const monadPoPAbi = [
       {
         components: [
           { internalType: "uint256", name: "id", type: "uint256" },
-          { internalType: "bytes32", name: "receiptHash", type: "bytes32" },
           { internalType: "bytes32", name: "productId", type: "bytes32" },
+          { internalType: "bytes32", name: "originalReceiptHash", type: "bytes32" },
           { internalType: "address", name: "merchant", type: "address" },
-          { internalType: "address", name: "buyer", type: "address" },
+          { internalType: "address", name: "originalBuyer", type: "address" },
+          { internalType: "address", name: "currentOwner", type: "address" },
           { internalType: "uint64", name: "purchasedAt", type: "uint64" },
           { internalType: "uint64", name: "warrantyUntil", type: "uint64" },
           { internalType: "uint8", name: "status", type: "uint8" },
         ],
-        internalType: "struct MonadPoP.PurchaseProof",
+        internalType: "struct MonadPoP.ProductPassport",
         name: "",
         type: "tuple",
       },
@@ -83,29 +274,6 @@ export const monadPoPAbi = [
   {
     inputs: [
       { internalType: "uint256", name: "receiptId", type: "uint256" },
-      { internalType: "bytes32", name: "candidateHash", type: "bytes32" },
-    ],
-    name: "verifyReceiptHash",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "buyer", type: "address" },
-      { internalType: "bytes32", name: "productId", type: "bytes32" },
-      { internalType: "bytes32", name: "receiptHash", type: "bytes32" },
-      { internalType: "uint64", name: "purchasedAt", type: "uint64" },
-      { internalType: "uint64", name: "warrantyUntil", type: "uint64" },
-    ],
-    name: "issueReceipt",
-    outputs: [{ internalType: "uint256", name: "receiptId", type: "uint256" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "uint256", name: "receiptId", type: "uint256" },
       { internalType: "uint8", name: "newStatus", type: "uint8" },
     ],
     name: "updateReceiptStatus",
@@ -113,16 +281,50 @@ export const monadPoPAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+
+  // Events
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "uint256", name: "receiptId", type: "uint256" },
+      { indexed: true, internalType: "uint256", name: "passportId", type: "uint256" },
       { indexed: true, internalType: "address", name: "merchant", type: "address" },
       { indexed: true, internalType: "address", name: "buyer", type: "address" },
       { indexed: false, internalType: "bytes32", name: "productId", type: "bytes32" },
       { indexed: false, internalType: "bytes32", name: "receiptHash", type: "bytes32" },
     ],
-    name: "ReceiptIssued",
+    name: "PassportIssued",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "passportId", type: "uint256" },
+      { indexed: false, internalType: "uint8", name: "previousStatus", type: "uint8" },
+      { indexed: false, internalType: "uint8", name: "newStatus", type: "uint8" },
+    ],
+    name: "PassportStatusChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "listingId", type: "uint256" },
+      { indexed: true, internalType: "uint256", name: "passportId", type: "uint256" },
+      { indexed: true, internalType: "address", name: "seller", type: "address" },
+      { indexed: false, internalType: "uint256", name: "price", type: "uint256" },
+      { indexed: false, internalType: "bytes32", name: "metadataHash", type: "bytes32" },
+    ],
+    name: "ListingCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "listingId", type: "uint256" },
+      { indexed: true, internalType: "address", name: "buyer", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "saleProofHash", type: "bytes32" },
+    ],
+    name: "SaleCompleted",
     type: "event",
   },
 ] as const;
@@ -136,14 +338,12 @@ export const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_MONAD_POP_CONTRACT_ADDR
 export async function checkIsMerchant(walletAddress: string): Promise<boolean> {
   try {
     const cleanAddress = getAddress(walletAddress);
-    // Call contract to get role hash
     const merchantRoleHash = await publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: monadPoPAbi,
       functionName: "MERCHANT_ROLE",
     } as any);
 
-    // Call hasRole
     const hasRole = await publicClient.readContract({
       address: CONTRACT_ADDRESS,
       abi: monadPoPAbi,
