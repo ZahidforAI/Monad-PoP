@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  
+  --background: #fdf8ff;
+  --foreground: #1c1a23;
+  --card: #ffffff;
+  --card-foreground: #1c1a23;
+  --card-border: #e2dfde;
+  --outline-variant: #c9c4d6;
+  --surface-container-low: #f7f1fe;
+  --surface-container-high: #ebe6f2;
+  --surface-container-highest: #e5e0ec;
+  
+  --primary: #5b43ce;
+  --primary-container: #f1ecf8;
+  --on-primary-container: #5b43ce;
+  
+  --monad-purple: #5b43ce;
+  --monad-lightPurple: #745ee9;
+  --monad-darkPurple: #3e2ca3;
+  --monad-glow: rgba(91, 67, 206, 0.1);
+  
+  --accent-cyan: #008899;
+  --accent-emerald: #0f766e;
+  --accent-rose: #be123c;
+  --accent-amber: #b45309;
+  
+  --receipt-bg: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+  
+  --background: #08070b;
+  --foreground: #f3f4f6;
+  --card: #110f18;
+  --card-foreground: #f3f4f6;
+  --card-border: #221c35;
+  --outline-variant: #2d2644;
+  --surface-container-low: #141221;
+  --surface-container-high: #1c182d;
+  --surface-container-highest: #25203c;
+  
+  --primary: #8a2be2;
+  --primary-container: #1b162c;
+  --on-primary-container: #a04df0;
+  
+  --monad-purple: #8a2be2;
+  --monad-lightPurple: #a04df0;
+  --monad-darkPurple: #5f1bb0;
+  --monad-glow: rgba(138, 43, 226, 0.15);
+  
+  --accent-cyan: #00f0ff;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-amber: #f59e0b;
+  
+  --receipt-bg: #141220;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom glow borders and cards styling */
+.glow-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glow-card:hover {
+  border-color: var(--monad-lightPurple);
+  box-shadow: 0 0 20px var(--monad-glow);
+}
+
+/* Glowing text effects */
+.text-glow-purple {
+  text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+/* Tactile ledger/receipt style decorations */
+.receipt-texture {
+  background-image: radial-gradient(circle, var(--outline-variant) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.perforated-edge {
+  mask-image: radial-gradient(circle, transparent 6px, black 6px);
+  mask-size: 20px 20px;
+  mask-position: 0 -10px;
+}
+
+.perforated-line {
+  background-image: linear-gradient(to right, var(--outline-variant) 50%, transparent 50%);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  height: 1px;
+  width: 100%;
+}
+
+.receipt-perforation {
+  background-image: radial-gradient(circle, transparent 70%, var(--background) 75%);
+  background-size: 12px 12px;
+  background-position: 0 100%;
+  background-repeat: repeat-x;
+  height: 6px;
+  width: 100%;
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+}
+
+.registration-mark {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--outline-variant);
+}
+
+.mark-tl { top: -2px; left: -2px; border-top: 1px solid; border-left: 1px solid; }
+.mark-tr { top: -2px; right: -2px; border-top: 1px solid; border-right: 1px solid; }
+.mark-bl { bottom: -2px; left: -2px; border-bottom: 1px solid; border-left: 1px solid; }
+.mark-br { bottom: -2px; right: -2px; border-bottom: 1px solid; border-right: 1px solid; }
+
+.reg-mark { position: absolute; width: 12px; height: 12px; border: 1px solid var(--outline-variant); }
+.reg-tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+.reg-tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+.reg-bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+.reg-br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
