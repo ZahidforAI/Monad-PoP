@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useAuth } from "@/hooks/useAuth";
-import { Wallet, LogOut, Shield, User, Store, MessageSquare, Menu, X, Sun, Moon } from "lucide-react";
+import { Wallet, LogOut, Shield, User, Store, MessageSquare, Menu, X, Sun, Moon, ShoppingBag, History } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Navigation() {
@@ -52,7 +52,10 @@ export default function Navigation() {
   };
 
   const navLinks = [
-    { name: "My Wallet", href: "/wallet", icon: User },
+    { name: "Explore", href: "/explore", icon: ShoppingBag },
+    { name: "Sell", href: "/sell", icon: User },
+    { name: "Requests", href: "/requests", icon: History },
+    { name: "My Passports", href: "/passports", icon: Shield },
     { name: "Merchant Portal", href: "/merchant", icon: Store },
     { name: "AI Assistant", href: "/assistant", icon: MessageSquare },
   ];

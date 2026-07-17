@@ -57,6 +57,10 @@ export default function MerchantPage() {
   const [returnDays, setReturnDays] = useState("14");
   const [warrantyDays, setWarrantyDays] = useState("365");
   const [merchantReference, setMerchantReference] = useState("");
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   // UI state
   const [issuingStep, setIssuingStep] = useState<"IDLE" | "PREPARING" | "PROMPTING_WALLET" | "WAITING_TX" | "CONFIRMING_DB">("IDLE");
@@ -128,6 +132,10 @@ export default function MerchantPage() {
       product: {
         productIdentifier,
         displayName: productName,
+        brand: brand || "Generic",
+        model: model || "Standard",
+        imageUrl: imageUrl || null,
+        description: description || "",
         ...(sku ? { sku } : {}),
         ...(serialNumber ? { serialNumber } : {}),
       },
@@ -199,6 +207,10 @@ export default function MerchantPage() {
             setSku("");
             setSerialNumber("");
             setAmount("");
+            setBrand("");
+            setModel("");
+            setImageUrl("");
+            setDescription("");
             setMerchantReference(`REF-${Math.floor(100000 + Math.random() * 900000)}`);
           }
         } catch {
@@ -413,6 +425,53 @@ export default function MerchantPage() {
                   className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-mono transition-colors"
                 />
               </div>
+            </div>
+
+            {/* Brand & Model */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-1.5">
+                <label className="font-mono text-xs font-bold text-foreground/50 uppercase tracking-widest">Brand (E.g. Rolex, Aura)</label>
+                <input
+                  type="text"
+                  placeholder="E.g. Rolex"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 transition-colors"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="font-mono text-xs font-bold text-foreground/50 uppercase tracking-widest">Model Spec (E.g. Chronos Black)</label>
+                <input
+                  type="text"
+                  placeholder="E.g. Chronos Black"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Image URL & Description */}
+            <div className="space-y-1.5">
+              <label className="font-mono text-xs font-bold text-foreground/50 uppercase tracking-widest">Product Image URL</label>
+              <input
+                type="text"
+                placeholder="https://images.unsplash.com/..."
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 font-mono transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-mono text-xs font-bold text-foreground/50 uppercase tracking-widest">Description</label>
+              <textarea
+                placeholder="Product description and passport specifications..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full bg-transparent border border-outline-variant focus:border-primary outline-none p-3 rounded-lg transition-colors"
+                rows={3}
+              />
             </div>
 
             {/* SKU and Serial */}

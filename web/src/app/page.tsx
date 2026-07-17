@@ -31,10 +31,10 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Link
-              href="/wallet"
+              href="/explore"
               className="flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-semibold font-mono text-xs uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-transform"
             >
-              Open Receipt Wallet
+              Explore Marketplace
               <ArrowRight className="w-4 h-4" />
             </Link>
             
