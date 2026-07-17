@@ -5,67 +5,101 @@
 :root {
   color-scheme: light;
   
-  --background: #fdf8ff;
-  --foreground: #1c1a23;
+  --purple-950: #16002e;
+  --purple-900: #200043;
+  --purple-800: #351069;
+  --purple-700: #5e2bc7;
+  --purple-600: #836ef9;
+  --purple-500: #9b87ff;
+  --purple-300: #c7b8ff;
+  --purple-100: #eee9ff;
+  --purple-55:  #f3edff;
+  --purple-50:  #f8f6ff;
+
+  --white:      #ffffff;
+  --ink:        #150d20;
+  --ink-soft:   #51475e;
+  --success:    #168a5b;
+  --warning:    #d97706;
+  --danger:     #d64059;
+
+  --line:       rgba(53, 16, 105, 0.14);
+  --line-dark:  rgba(255, 255, 255, 0.18);
+  --glow:       rgba(131, 110, 249, 0.34);
+
+  --background: #ffffff;
+  --foreground: #150d20;
   --card: #ffffff;
-  --card-foreground: #1c1a23;
-  --card-border: #e2dfde;
-  --outline-variant: #c9c4d6;
-  --surface-container-low: #f7f1fe;
-  --surface-container-high: #ebe6f2;
-  --surface-container-highest: #e5e0ec;
+  --card-foreground: #150d20;
+  --card-border: rgba(53, 16, 105, 0.14);
+  --outline-variant: rgba(53, 16, 105, 0.2);
+  --surface-container-low: #f8f6ff;
+  --surface-container-high: #eee9ff;
+  --surface-container-highest: #c7b8ff;
   
-  --primary: #5b43ce;
-  --primary-container: #f1ecf8;
-  --on-primary-container: #5b43ce;
+  --primary: #5e2bc7;
+  --primary-container: #eee9ff;
+  --on-primary-container: #351069;
   
-  --monad-purple: #5b43ce;
-  --monad-lightPurple: #745ee9;
-  --monad-darkPurple: #3e2ca3;
-  --monad-glow: rgba(91, 67, 206, 0.1);
+  --monad-purple: #5e2bc7;
+  --monad-lightPurple: #836ef9;
+  --monad-darkPurple: #351069;
+  --monad-glow: rgba(94, 43, 199, 0.1);
   
   --accent-cyan: #008899;
-  --accent-emerald: #0f766e;
-  --accent-rose: #be123c;
-  --accent-amber: #b45309;
+  --accent-emerald: #168a5b;
+  --accent-rose: #d64059;
+  --accent-amber: #d97706;
   
   --receipt-bg: #ffffff;
+
+  /* Typography fonts */
+  --font-display: "Geist", "Inter", "Outfit", sans-serif;
+  --font-mono: "Geist Mono", "IBM Plex Mono", "JetBrains Mono", monospace;
+
+  /* Motion tokens */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 180ms;
+  --duration-ui: 280ms;
+  --duration-reveal: 800ms;
+  --duration-chapter: 1000ms;
 }
 
 .dark {
   color-scheme: dark;
   
-  --background: #08070b;
-  --foreground: #f3f4f6;
-  --card: #110f18;
-  --card-foreground: #f3f4f6;
-  --card-border: #221c35;
-  --outline-variant: #2d2644;
-  --surface-container-low: #141221;
-  --surface-container-high: #1c182d;
-  --surface-container-highest: #25203c;
+  --background: #16002e;
+  --foreground: #eee9ff;
+  --card: #200043;
+  --card-foreground: #eee9ff;
+  --card-border: rgba(255, 255, 255, 0.12);
+  --outline-variant: rgba(255, 255, 255, 0.18);
+  --surface-container-low: #200043;
+  --surface-container-high: #351069;
+  --surface-container-highest: #5e2bc7;
   
-  --primary: #8a2be2;
-  --primary-container: #1b162c;
-  --on-primary-container: #a04df0;
+  --primary: #836ef9;
+  --primary-container: #351069;
+  --on-primary-container: #c7b8ff;
   
-  --monad-purple: #8a2be2;
-  --monad-lightPurple: #a04df0;
-  --monad-darkPurple: #5f1bb0;
-  --monad-glow: rgba(138, 43, 226, 0.15);
+  --monad-purple: #836ef9;
+  --monad-lightPurple: #9b87ff;
+  --monad-darkPurple: #200043;
+  --monad-glow: rgba(131, 110, 249, 0.15);
   
   --accent-cyan: #00f0ff;
   --accent-emerald: #10b981;
   --accent-rose: #f43f5e;
   --accent-amber: #f59e0b;
   
-  --receipt-bg: #141220;
+  --receipt-bg: #200043;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-display);
   overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -164,17 +198,80 @@ body {
 }
 
 /* Animation utilities */
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Marquee Loop */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Concentric CTA Outline Rings (4s loop, staggered by 1.3s) */
+@keyframes ctaPulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-cta-ring-pulse-1 {
+  animation: ctaPulse 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-cta-ring-pulse-2 {
+  animation: ctaPulse 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 1.3s;
+}
+
+.animate-cta-ring-pulse-3 {
+  animation: ctaPulse 4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation-delay: 2.6s;
+}
+
+/* Prefers Reduced Motion CSS override overrides */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-marquee,
+  .animate-cta-ring-pulse-1,
+  .animate-cta-ring-pulse-2,
+  .animate-cta-ring-pulse-3,
+  .animate-pulse {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
