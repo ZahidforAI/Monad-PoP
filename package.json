@@ -1,0 +1,14 @@
+{
+  "name": "monad-pop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monad Proof of Purchase — Merchant-issued, blockchain-verifiable digital receipts on Monad",
+  "scripts": {
+    "install:all": "npm install --prefix contracts && npm install --prefix web",
+    "test:contracts": "npm test --prefix contracts",
+    "compile:contracts": "npm run compile --prefix contracts",
+    "dev:web": "npm run dev --prefix web",
+    "build:web": "npm run build --prefix web",
+    "lint:web": "npm run lint --prefix web"
+  }
+}
